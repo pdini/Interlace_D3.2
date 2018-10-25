@@ -1,10 +1,11 @@
 *.aux
-misc/*.aux
+Misc/*.aux
 *.bbl
 *.blg
 *.toc
 *.log
-main.pdf
+*.pdf
+*.ps
 *.iml
 !.gitkeep
 *.synctex.gz

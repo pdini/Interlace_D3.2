@@ -1,0 +1,32 @@
+Participants
+	+Member
+	+Subscriber<-Member
+	+Individual<-Member
+
+Transactions
+	+Transfer
+	+CreditTransfer<-Transfer
+	+DebitTransfer<-Transfer
+	+DebitTransferAcknowledge
+	-InitBlockchain
+	-CleanupPendingTransfers
+	
+Enums
+	+Unit
+	+Operation
+	+GroupType
+	+AccountType
+	+TransactionStatus
+	
+Assets
+	+Account
+	+MemberAccount<-Account
+	+SysAccount<-Account
+	+CCAccount<-MemberAccount
+	+PendingTransfer
+	-DeltaDebt
+
+Events
+	+LimitAlert
+	+RequestDebitAcknowledge
+	+DebitAcknowledgeInvalid

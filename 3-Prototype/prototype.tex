@@ -8,7 +8,37 @@ Eduard Hirsch
 
 \section{Architecture}
 
-TODO
+The core architecture of the INTERLACE project presented next is multi-layered and concentrates on being scalable and highly distributable in contrast to the current monolithic payment platform used by Sardex.
+
+The chosen block-chain approach is going to be explained in detail. The technical challenges during the planning of that implementation strategies are discussed in subsequent sections of that chapter.
+
+\subsection{Sardex Network}
+
+In deliverable D2.1 and D3.1 the current architecture has been written down using the AS(I)M approach and as mentioned before a working client-server network based on message-passing has been developed. That classic model was used to derive a new payment network based on block-chain approach.
+
+The idea for the new network comprise of using a publicly maintained and easy to use block-chain which supports the though of a mutual interest-free credit system enabling account based balances rather than token based currencies only. This thought led to a prototypical implementation using hyperledger fabric together with hyperledger composer.
+
+Regardless of the choice of hyperledger environment it also has been important having central payment network which is reliable, verifiable but also to a specific extend controllable in order to impose the basic Sardex payment rules on it.
+
+\subsection{Hyperledger Fabric Network}
+
+The given network constraints were included into a hyperledger fabric network which sets up a core environment offering a basic block-chain to interact with.
+
+In figure [TODO: ref simple net] the current working environment is shown. It is utilising the possibilities hyperledger fabric is offering. When looking further into detail the following main components can be singled out:
+
+\begin{itemize}
+	\item Sardex as participating Organisation
+	\item Sardex maintaining one peer
+	\item An orderer managed by "Interlace"
+	\item Two Member Ship Providers (MSPs)
+	\item Clients and Services connecting to the network
+\end{itemize}
+
+\todo{add simple network figure}
+
+\todo{add extended network figure}
+
+\subsection{cto-model}
 
 \section{Prototype}
 

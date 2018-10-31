@@ -12,7 +12,7 @@ TODO
 
 \section{Prototype}
 
-The prototype is a block-chain realisation of INTERLACE, can be found on GitHub\footnote{https://github.com/InterlaceProject/InterlaceBlockchain} and is based on the specifications created in deliverable D3.1 as well as the ASIM Specification of the requirements.
+The prototype is a block-chain realisation of INTERLACE, can be found on GitHub\footnote{https://github.com/InterlaceProject/InterlaceBlockchain} and is based on the specifications created in deliverable D3.1\cite{INTERLACE_D31} as well as the ASIM Specification of the requirements.
 
 First it is necessary to install the pre-requisites which are available for Linux and Mac OS. Currently these are the recommended operating systems, however, with additional effort it might be possible to run the INTERLACE blockchain on Windows directly. To support windows user a virtual machine set-up is also available.
 
@@ -20,17 +20,17 @@ Additionally, it is also important to set-up a development environment described
 
 \subsection{Install}
 
-This part of the documents talks about how to set-up and run the business network on your machine. However, before you actually can begin you need to install the pre-requisites which are listed at the hyperledger composer documentation\footnote{https://hyperledger.github.io/composer/latest/installing/installing-prereqs.html}. There they are also providing a script for installing all the requirements for your machine.
+This part of the documents talks about how to set-up and run the business network on your machine. However, before it is actually possible to begin it is necessary to install the pre-requisites which are listed at the hyperledger composer documentation\footnote{https://hyperledger.github.io/composer/latest/installing/installing-prereqs.html}. The website also offers a download where a script for installing all the requirements for a machine is provided.
 
-However, if you are a windows user those script won't help because for now most of the packages are not prepared for a windows operating system. For this user group a virtual machine has been prepared which is also installing all the necessary frameworks and software tools. This virtual machine is controlled by vagrant\footnote{https://www.vagrantup.com/} and uses hyper-v or virtual box as hypervisor. That VM configuration also is published at GitHub\footnote{https://github.com/hirsche/hyperledger}.
+Nevertheless, for windows user those script won't help because for now most of the packages are not yet prepared (as of writing) for a windows operating systems. For this user group a virtual machine has been prepared which is also installing all the necessary frameworks and software tools during provisioning. This virtual machine is controlled by vagrant\footnote{https://www.vagrantup.com/} and uses hyper-v or virtual box as hypervisor (two different branches). That VM configuration is published at GitHub\footnote{https://github.com/hirsche/hyperledger}.
 
 \textbf{Environment Start-Up}
 
-Once the hyperledger environment is installed, the next step is about starting the INTERLACE environment. To make communication uniform the block-chain is configured to publish all services under the host name "interlace.chain". If you are windows user and used the suggested vagrant set-up the new hostname is added to your host-file during start-up time if not you'd need to configure the name by yourself.
+Once the hyperledger environment is installed, the next step is about starting the INTERLACE environment. To make communication uniform the block-chain is configured to publish all services under the host name "interlace.chain". Windows user facilitating the suggested vagrant set-up the new hostname is added to your host-file during start-up time using the vagrant-hostmanager plug-in. Thus there is no need to configure the name manually.
 
 \textbf{Configure Hostnames}
 
-Thus before executing it is important for your local set-up to add a host name entry for "interlace.chain". Usually this entry will point to ip 127.0.0.1 (localhost). However, on a production system or if you decide to start the hyperledger composer services on different interface, fix the IP accordingly. Here is a list of hosts-file locations according to your operating systems
+For non-vagrant users it is important before executing for the local set-up to add a host name entry for "interlace.chain". Usually this entry will point to ip 127.0.0.1 (localhost). On a production system or if it was chosen to start the hyperledger composer services on a public interface, the IP needs to be fixed accordingly. Here is a list of hosts-file locations according to different operating systems types:
 
 \begin{itemize}
 	\item Mac OS: /private/etc/hosts
@@ -44,17 +44,17 @@ The format may vary a little but usually a new host with its hostname is defined
 	127.0.0.1        interlace.chain
 \end{lstlisting}
 
-Depending on the operating system it might be also necessary to update and restart the respective services.
+Depending on the operating system it might be also necessary to update and restart the respective services (e.g. MacOS).
 
 \textbf{Run fabric block chain (the first time)}
 
-Now the main configurations have been done and hyperledger fabric can be started, which acts as a base for hyperledger composer. Thus, now the GitHub repository \footnote{https://github.com/InterlaceProject/InterlaceBlockchain} if not yet done may be downloaded by using the git versioning system calling
+Now the main configurations have been done and hyperledger fabric can be started, which acts as a base for hyperledger composer. To continue the GitHub repository \footnote{https://github.com/InterlaceProject/InterlaceBlockchain} if not yet done needs to be downloaded by using the git visioning system by calling
 
 \begin{lstlisting}[language=bash]
 	git clone https://github.com/InterlaceProject/InterlaceBlockchain.git
 \end{lstlisting}
 
-In the created directory "InterlaceBlockchain" the business network implementation including a web application can be found. The next listing shows the bash script which downloads the fabric docker container and finally starts the container using docker-composer \footnote{https://docs.docker.com/compose/}:
+In the created directory "InterlaceBlockchain" the business network implementation including a web application can be found. The next listing shows the bash script which downloads several fabric docker container and finally starts them using docker-composer \footnote{https://docs.docker.com/compose/}:
 
 \begin{lstlisting}[language=bash]
 	cd fabric
@@ -64,30 +64,31 @@ In the created directory "InterlaceBlockchain" the business network implementati
 
 \textbf{Initialize Interlace-Chain}
 
-Finally, after fabric has been started it is necessary to initialize the block chain with a call of
+Finally, after fabric has been started the next step is to initialize the block chain with a call of
 
 \begin{lstlisting}[language=bash]
 	cd chain
 	./initNetwork.sh # use hyperledger composer to create a business network and deploy it
 \end{lstlisting}
 
-\textbf{./initNetwork.sh} will copy all models and script to the network peers to make them accessible in the hyperledger blockchain.
+\textbf{./initNetwork.sh} will copy all models and script to the network peers to make them accessible in the hyperledger blockchain. The last step in the script starts the business network.
 
-You may further use playground to access and test Credit- or DebitTransfer transactions. \textbf{data.json} should act as a helper to init the network by hand, but it is recommended to update the JavaScript function \textit{initBlockchain(transfer)} in \textit{./chain/lib/init.js}. That chain-code part is executed when transaction InitBlockchain is submitted. Be careful to run \textbf{InitBlockchain} only once otherwise errors or duplicate entries might happen.
+You may further use playground to access and test Credit- or DebitTransfer transactions. \textbf{data.json} should act as a helper to init the network by hand, but it is recommended to update the JavaScript function \textit{initBlockchain(transfer)} in \textit{./chain/lib/init.js}. That chain-code part is executed when transaction InitBlockchain is submitted. Be careful to run \textbf{InitBlockchain} only once otherwise errors or duplicate entries might happen resulting in a inconsistent chain.
 
 \textbf{Network updates after chain-code changes}
 
 After changes to the acl, cto, queries, the libraries or other parts of the core chain-code application the network needs to be updated. This can be achieved by executing
 
 \begin{lstlisting}[language=bash]
-	./chain/updateNetwork.sh
+	cd chain
+	./updateNetwork.sh
 \end{lstlisting}
 
-This script reads the current version number of \textit{package.json} file increases it by one and creates a new bna package. When scripts are correct and the bna-package could be created it is deployed to the peers and the network updated to the new network version which will utilize the new bna package.
+This script reads the current version number of \textit{package.json} file increases it by one and creates a new bna package. When scripts are correct and the bna-package could be created it is deployed to the peers and the network updated to a new, higher network version which will utilize the new bna package.
 
 \textbf{Shutting down}
 
-Sometimes it is useful to throw away everything and restart from scratch. To teardown fabric and remove card left overs execute:
+Sometimes it is useful to throw away everything and restart from scratch. To tear down fabric and remove card left-overs execute:
 
 \begin{lstlisting}[language=bash]
 	cd fabric
@@ -192,7 +193,13 @@ The web page is based on AngularJS and communicates over REST with our previousl
 
 \section{Technical Details}
 
+TODO
+
 \section{Identity Management}
+
+TODO
+
+---------------
 
 \todo{outline:}
 \begin{verbatim}

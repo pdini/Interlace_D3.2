@@ -13,3 +13,4 @@ Misc/*.aux
 *.fls
 *.fdb_latexmk
 *.~vsdx
+*.dvi

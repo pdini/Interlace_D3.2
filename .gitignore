@@ -5,6 +5,7 @@ Misc/*.aux
 *.toc
 *.log
 *.pdf
+!Figures/*.pdf
 *.ps
 *.iml
 !.gitkeep

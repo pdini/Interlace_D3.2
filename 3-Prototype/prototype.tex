@@ -22,17 +22,26 @@ Regardless of the choice of hyperledger environment it also has been important h
 
 \subsection{Hyperledger Fabric Network}
 
-The given network constraints were included into a hyperledger fabric network which sets up a core environment offering a basic block-chain to interact with.
+The given network constraints were used while creating a new hyperledger fabric network which sets up a core environment offering a basic block-chain to interact with. Next a close look is taken on the actual implemented network and a description for the various parts is given.
 
-In figure \ref{fig:prototype-net} the current working environment is shown. It is utilising the possibilities hyperledger fabric is offering. When looking further into detail the following main components can be singled out:
+In figure \ref{fig:prototype-net} the current working environment is shown. It is utilising the possibilities hyperledger fabric is offering. When looking further into detail fabric actually imposes a structure to a newly created network for which the following main components can be singled out when focusing on Interlace:
 
 \begin{itemize}
 	\item Sardex as participating Organisation
-	\item Sardex maintaining one peer
-	\item An orderer managed by "Interlace"
-	\item Two Member Ship Providers (MSPs)
-	\item Clients and Services connecting to the network
+		\subitem One peer (named: peer0.sardex.sardex.net)
+		\subitem Clients and Services connecting to the network
+		\subitem Sardex Member Ship Provider (SardexMSP)
+	\item An orderer managed by "Interlace" Organisation
+		\subitem An orderer (named: orderer.sardex.net)
+		\subitem Interlace Member Ship Provider (InterlaceOrdererMSP)
+	\item Certification Authority (CA)
 \end{itemize}
+
+Starting from a Certification Authority (CA) a user may issue a unique identity which can be verified any time by anyone participating in the network. Those identities are part of the process of giving members of the circuit right to work with and facilitate the network with particular roles and access privileges. The actual empowering of a user takes place inside of the membership provider.
+
+Nevertheless, the power of an MSP goes beyond simply caring about who is a network participant or member of a particular channel. An MSP is able of identifying specific roles an actor might play either within the scope of the organization the MSP represents (e.g., admins, or as members of a sub-organization group), and defines the foundation for giving access privileges in the context of a network and channel (e.g., channel admins, readers, writers). More details can be found on the documentations web-site of hyperledger fabric\footnote{https://hyperledger-fabric.readthedocs.io/en/master/membership/membership.html}.
+
+Due to simplicity reasons and in order to set-up the prototype network quickly, access/role management has been reduced to a minimum. Section \ref{sec:id-management} focus on a more detailed explanation on how those things might work in or might be changed to in case of large scale scenarios.  
 
 
 \begin{figure}[htbp]
@@ -237,6 +246,7 @@ The web page is based on AngularJS and communicates over REST with our previousl
 TODO
 
 \section{Identity Management}
+\label{sec:id-management}
 
 TODO
 

@@ -18,7 +18,7 @@ In deliverable D2.1 and D3.1 the current architecture has been written down usin
 
 That classic model was used to derive a new payment network based on block-chain approach. The thoughts for the new network comprise using a publicly maintained and an easy to use block-chain which supports the idea of a interest-free mutual credit system enabling account based balances rather than token based currencies only. These thoughts led to a prototypical implementation using hyperledger fabric together with hyperledger composer.
 
-Regardless of the choice of hyperledger environment it also has been important having central payment network which is not only reliable and verifiable but also to a specific extend controllable in order to impose the basic Sardex payment rules on it..
+Regardless of the choice of hyperledger environment it also has been important having a central payment network which is not only reliable and verifiable but also (to a specific extend) controllable in order to impose the basic Sardex payment rules on it.
 
 \subsection{Hyperledger Fabric Network}
 
@@ -54,16 +54,24 @@ The single \textbf{orderer} node of figure \ref{fig:prototype-net} takes care to
 
 For the network one \textbf{peer} is configured and started. This peer can be called the core of the environment because it is mainly handling so called \textit{smart logic} (chain-code) part. Being more specific peers are maintaining the ledger by first endorsing transactions (e.g. credit and debit transfers in case of Interlace), which is done by simulating them, and then they are finally validated and committed to the local ledger.
 
-A very simple network is defined and described by the above scenario, which can be set-up following the instructions of section \ref{sec:prototype}. Certainly, that scenario needs to be extended in a real-world environment, thus a few hints and considerations are given by figure \ref{fig:prototype-net-ext} which will be explained next.
+A very simple network is defined and described by the above scenario, which can be set-up following the instructions of section \ref{sec:prototype}. Certainly, that scenario needs to be extended in a real-world environment, thus a few hints and considerations are given by figure \ref{fig:prototype-net-ext} which will be explained in chapter \ref{ch:conclusion} section \ref{sec:future-scene}.
 
-\begin{figure}[htbp]
-  \centering
-  %\includegraphics[width=0.5\textwidth, clip, trim=1mm 1mm 1mm 1mm]{Figures/ext-network}
-  \caption{\bf\small TODO: Extended Network Structure}
-  \label{fig:prototype-net-ext}
-\end{figure}
+\subsection{Network Configuration Files}
+\label{sec:net-conf-files}
+
+There are three main configuration files providing a basic foundation for generating a preconfigured network. Those files are used to create the respective certificates as well as configuration files to spin up virtualized containers. Thus the following three yaml-files are an example of how to create a particular net as described in the previous section where the Interlace network has been shown.
+
+\begin{itemize}
+	\item configfx.yaml
+	\item crypto-config.yaml
+	\item docker-compose
+\end{itemize}
+
+\todo{some more info}
 
 \subsection{cto-model}
+
+\todo{new cto-model}
 
 \section{Prototype}
 \label{sec:prototype}
@@ -249,26 +257,7 @@ The web page is based on AngularJS and communicates over REST with our previousl
 
 \section{Technical Details}
 
-TODO
-
-\section{Identity Management}
-\label{sec:id-management}
-
-TODO
-
----------------
-
-\todo{outline:}
 \begin{verbatim}
-
-Sec: Architecture:
-  - Sardex Network
-  - fabric network  
-  - cto-model 
-    
-Sec: Prototype
-    - installation
-    - usage
     
 Sec: Technical Details:
     - chain-code bits
@@ -279,10 +268,6 @@ Sec: Technical Details:
     - docker-compose
     - rest server https://hyperledger.github.io/composer/latest/reference/rest-server
 
-Sec: Identity Management Considerations:
-  - permissions
-  - https://www.codementor.io/gangachris125/passport-jwt-authentication-for-hyperledger-composer-rest-server-jqfgkoljn
-  - passport.js (swagger) www.passportjs.org/docs/
-  - user profile strategies
-
 \end{verbatim}
+
+\todo{more context, write}

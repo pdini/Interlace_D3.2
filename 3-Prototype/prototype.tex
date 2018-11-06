@@ -27,33 +27,38 @@ The given network constraints were used while creating a new hyperledger fabric 
 In figure \ref{fig:prototype-net} the current working environment is shown. It is utilising the possibilities hyperledger fabric is offering. When looking further into detail fabric actually imposes a structure to a newly created network for which the following main components can be singled out when focusing on Interlace:
 
 \begin{itemize}
-	\item Sardex as participating Organisation
-		\subitem One peer (named: peer0.sardex.sardex.net)
+	\item Sardex as participating \textbf{organisation}
+		\subitem One  \textbf{peer} (named: peer0.sardex.sardex.net)
 		\subitem Clients and Services connecting to the network
-		\subitem Sardex Member Ship Provider (SardexMSP)
-	\item An orderer managed by "Interlace" Organisation
-		\subitem An orderer (named: orderer.sardex.net)
-		\subitem Interlace Member Ship Provider (InterlaceOrdererMSP)
-	\item Certification Authority (CA)
+		\subitem Sardex Membership Provider \textbf{(MSP)} with ID SardexMSP
+	\item "Interlace" pseudo organisation
+		\subitem An \textbf{orderer} (named: orderer.sardex.net)
+		\subitem Interlace Membership Provider \textbf{(MSP)} with ID InterlaceOrdererMSP
+	\item Certification Authority short \textbf{CA}
 \end{itemize}
 
-Starting from a Certification Authority (CA) a user may issue a unique identity which can be verified any time by anyone participating in the network. Those identities are part of the process of giving members of the circuit right to work with and facilitate the network with particular roles and access privileges. The actual empowering of a user takes place inside of the membership provider.
+Starting from a Certification Authority (\textbf{CA}) a user may issue a unique identity which can be verified any time by anyone participating in the network. Those identities are part of the process of giving members of the circuit right to work with and facilitate the network with particular roles and access privileges. The actual empowering of a user takes place inside of the membership provider (\textbf{MSB}).
 
 Nevertheless, the power of an MSP goes beyond simply caring about who is a network participant or member of a particular channel. An MSP is able of identifying specific roles an actor might play either within the scope of the organization the MSP represents (e.g., admins, or as members of a sub-organization group), and defines the foundation for giving access privileges in the context of a network and channel (e.g., channel admins, readers, writers). More details can be found on the documentations web-site of hyperledger fabric\footnote{https://hyperledger-fabric.readthedocs.io/en/master/membership/membership.html}.
 
-Due to simplicity reasons and in order to set-up the prototype network quickly, access/role management has been reduced to a minimum. Section \ref{sec:id-management} focus on a more detailed explanation on how those things might work in or might be changed to in case of large scale scenarios.  
-
+Due to simplicity reasons and in order to set-up the prototype network quickly, access/role management has been reduced to a minimum. Section \ref{sec:id-management} focus on a more detailed explanation on how those things might work or might be changed to in case of large scale scenarios.  
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.5\textwidth, clip, trim=1mm 1mm 1mm 1mm]{Figures/basic-network}
-  \caption{\bf\small Network Structure implemented by the Prototype}
+  \caption{\bf\small Network structure implemented by the Prototype}
   \label{fig:prototype-net}
 \end{figure}
 
+The single \textbf{orderer} node of figure \ref{fig:prototype-net} takes care to establish atomic broadcasts, orders/batches transactions and also signs each batch (block) to create unique and well defined chains. The membership provider of the orderer uses a central and pre-configured certification authority \textbf{CA}.
+
+For the network one \textbf{peer} is configured and started. This peer can be called the core of the environment because it is mainly handling so called \textit{smart logic} (chain-code) part. Being more specific peers are maintaining the ledger by first endorsing transactions (e.g. credit and debit transfers in case of Interlace), which is done by simulating them, and then they are finally validated and committed to the local ledger.
+
+A very simple network is defined and described by the above scenario, which can be set-up following the instructions of section \ref{sec:prototype}. Certainly, that scenario needs to be extended in a real-world environment, thus a few hints and considerations are given by figure \ref{fig:prototype-net-ext} which will be explained next.
+
 \begin{figure}[htbp]
   \centering
-  %\includegraphics[width=1.0\textwidth]{Figures/TODO}
+  %\includegraphics[width=0.5\textwidth, clip, trim=1mm 1mm 1mm 1mm]{Figures/ext-network}
   \caption{\bf\small TODO: Extended Network Structure}
   \label{fig:prototype-net-ext}
 \end{figure}
@@ -61,6 +66,7 @@ Due to simplicity reasons and in order to set-up the prototype network quickly, 
 \subsection{cto-model}
 
 \section{Prototype}
+\label{sec:prototype}
 
 The prototype is a block-chain realisation of INTERLACE, can be found on GitHub\footnote{https://github.com/InterlaceProject/InterlaceBlockchain} and is based on the specifications created in deliverable D3.1\cite{INTERLACE_D31} as well as the ASIM Specification of the requirements.
 

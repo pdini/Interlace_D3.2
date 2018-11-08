@@ -59,13 +59,149 @@ A very simple network is defined and described by the above scenario, which can 
 \subsection{Network Configuration Files}
 \label{sec:net-conf-files}
 
-There are three main configuration files providing a basic foundation for generating a preconfigured network. Those files are used to create the respective certificates as well as configuration files to spin up virtualized containers. Thus the following three yaml-files are an example of how to create a particular net as described in the previous section where the Interlace network has been shown.
+There are three main configuration files providing a basic foundation for generating a preconfigured network. Those files are used to create the respective certificates as well as configuration files to spin up virtualized containers. Thus the following three yaml-files are an example of how to create a particular net as described in the previous section where the Interlace network has been shown:
 
-\begin{itemize}
+\begin{enumerate}
 	\item crypto-config.yaml
 	\item configfx.yaml
-	\item docker-compose
+	\item docker-compose.yaml
+\end{enumerate}
+
+\textbf{crypto-config.yaml}
+
+The \textit{crypto-config.yaml} contains the network topology and defines therefore the basic structure of it. With the configuration file it is possible to use a tool called \textit{cryptogen} which takes crypto-config.yaml as input to generate the cryptographic material necessary to run the block-chain. Being more specific keys for both the organisations and components that belong to those organisations.
+
+A part taken from crypto-config.ymal is shown in figure \ref{lst:cryConOrderers} and defines one or more orderers. In figure \ref{lst:cryConPeers} the yaml definition of the network peers is depicted.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=yaml,firstnumber=1,caption={\bf\small crypto-config.yaml excerpt - Orderer(s) definition},captionpos=b,label=lst:cryConOrderers]
+OrdererOrgs:
+  # -----------------------------------------------------------------
+  # Orderer
+  # -----------------------------------------------------------------
+  - Name: InterlaceOrderer
+    Domain: sardex.net
+    # ---------------------------------------------------------------
+    # "Specs" - See PeerOrgs below for complete description
+    # ---------------------------------------------------------------
+    Specs:
+  	  - Hostname: orderer
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+In figure \ref{lst:cryConOrderers} in case of Interlace only one orderer is specified in line 5 with the name \textit{InterlaceOrderer}. Using the \textit{Domain} key the network \textit{sardex.net} domain is defined, thus, together with the \textit{Hostname} definition in line 11 the Interlace orderer can be reached using \textit{orderer.sardex.net}.
+
+For the various organisations peers can be defined. In figure \ref{lst:cryConPeers} the Interlace project specific definitions are shown. The first and only organisation for now is \textit{Sardex} in the \textit{sardex.net} domain. Continuing this theme further Sardex gets the \textit{Domain}-name \textit{sardex.sardex.net}. Taking a look the hierarchy one level down peers will receive domain names like peer0.sardex.sardex.net or peer1.sardex.sardex.net. As the template \textit{Count}-key only defines a value of \textit{1} there will consequently only be one peer with sub-domain name \textit{peer0}.
+
+As mentioned before user management is handled on a very small scale thus when setting the user count to 0 in line 18 no users in addition to the administrator are defined. 
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=yaml,firstnumber=1,caption={\bf\small crypto-config.yaml excerpt - Peer(s) definition}, captionpos=b,label=lst:cryConPeers]
+PeerOrgs:
+  # -----------------------------------------------------------------
+  # Org1
+  # -----------------------------------------------------------------
+  - Name: Sardex
+    Domain: sardex.sardex.net
+    EnableNodeOUs: true
+    # Peer nodes and if applicable host name templates
+    # for the newly created peers
+    Template:
+      Count: 1
+    # -----------------------------------------------------------------
+    # "Users"
+    # -----------------------------------------------------------------
+    # Count: The number of user accounts _in addition_ to Admin
+    # -----------------------------------------------------------------
+    Users:
+      Count: 0
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+More details of how to configure the network in higher depth kindly consult the official hyperledger fabric documentation\footnote{https://hyperledger-fabric.readthedocs.io} which is a valuable source and should be studied in detail in order to build fabric based networks.
+
+In addition to the original fabric documentation a reference guide called "Hands-On Blockchain with Hyperledger" \cite{HandsOnBlockchainHyperledger2018} was used to build this network.
+
+\textbf{configtx.yaml}
+
+The second configuration-file named \textit{configtx.yaml} which is discussed next contains different but also some redundant configurations bits for the block-chain network. Another tool called \textit{configtxgen} picks up configtx.yaml and uses it to create configuration artefacts setting up a basic structure utilized by the actual block-chain network. This artefacts are:
+
+\begin{itemize}
+	\item orderer \textit{genesis block}
+	\item channel \textit{configuration transaction}
+	\item an \textit{anchor peer transaction} for each peer-organisation
 \end{itemize}
+
+"The orderer block is the Genesis Block for the ordering service, and the channel configuration transaction file is
+broadcast to the orderer at Channel creation time. The anchor peer transactions, as the name might suggest, specify
+each Organisation's Anchor Peer on this channel." - stating the fabric documentation.
+
+The core configuration excerpt can be seen in figure \ref{lst:configTxProfiles}.
+
+First, it is defining an orderer genesis block called \textit{InterlaceOrdererGenesis} containing one orderer handled by organization \textit{Interlace} together with some capabilities (not discussed here) as well as a consortium using the network.
+
+Second, it sets up a channel \textit{InterlaceChannel} which is connected to a consortium named \textit{InterlaceConsoritum}. This channel is used for credit- and debit-operations where currently only one organization is defined, namely, \textit{Sardex}.
+
+Third, as mentioned initially, the anchor peers of the organizations are written in form of transactions. Anchor peers may be defined for an organization using the config-property \textit{AnchorPeers}. The project defines a host called \textit{"peer0.sardex.sardex.net"} providing service at port \textit{"7051"} consistent with the crypto-config.yaml file. The host information is written into that initial transaction.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=yaml,firstnumber=1,caption={\bf\small configtx.yaml excerpt - Profiles definition}, captionpos=b,label=lst:configTxProfiles]
+Profiles:
+    InterlaceOrdererGenesis:
+        Capabilities:
+            <<: *ChannelCapabilities
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *Interlace
+            Capabilities:
+                <<: *OrdererCapabilities
+        Consortiums:
+            InterlaceConsortium:
+                Organizations:
+                    - *Sardex
+    InterlaceChannel:
+        Consortium: InterlaceConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Sardex
+            Capabilities:
+                <<: *ApplicationCapabilities
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+\textbf{docker-compose.yaml}
+
+Docker and Docker Compose are the core technologies used to start containerized services which finally start the actual block-chain and its components. Hyperledger fabric developer offer images which are ready to be started right away when provided with the correct configuration locations.
+
+The composer file is defining four container images. In figure \ref{lst:composeImages} a shortened composer yaml-file shows the services (or images) started when \textit{docker-compose up} is called. One for the certification authority (line 2), one for the orderer (line 4), one for the peer (line 6) and also an additional container (line 8) the peer is storing data to. That additional container is a NoSQL database called CouchDB. 
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=yaml,firstnumber=1,caption={\bf\small docker-compose.yaml excerpt}, captionpos=b,label=lst:composeImages]
+services:
+  ca.sardex.sardex.net:
+    [...]
+  orderer.sardex.net:
+    [...]
+  peer0.sardex.sardex.net:
+    [...]
+  couchdb:
+    [...]
+\end{lstlisting}
+\end{minipage}
+\end{center}
 
 \subsection{cto-model}
 

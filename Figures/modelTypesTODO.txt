@@ -8,8 +8,8 @@ Transactions
 	+CreditTransfer<-Transfer
 	+DebitTransfer<-Transfer
 	+DebitTransferAcknowledge
-	-InitBlockchain
-	-CleanupPendingTransfers
+	+InitBlockchain
+	+CleanupPendingTransfers
 	
 Enums
 	+Unit
@@ -24,7 +24,7 @@ Assets
 	+SysAccount<-Account
 	+CCAccount<-MemberAccount
 	+PendingTransfer
-	-DeltaDebt
+	+DeltaDebt
 
 Events
 	+LimitAlert

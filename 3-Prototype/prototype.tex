@@ -6,6 +6,31 @@
 Eduard Hirsch
 \end{center}
 
+\section{Directory Structure}
+\label{sec:directory}
+
+Before introducing the actual architecture and implementation the structure of the project is described in order to know what to find where. In figure \ref{fig:directory-structure} the main directories are shown and also separate the main components of the business network.
+
+\begin{figure}[htbp]
+\centering
+\begin{minipage}{5cm}
+\dirtree{%
+.1 Interlace Blockchain.
+	.2 chain.
+	.2 fabric.
+	.2 webapp.
+}
+\end{minipage}
+\caption{\bf\small Project Directory Structure}
+\label{fig:directory-structure}
+\end{figure}
+
+Explaining further the folder \textit{"chain"}  contains a \textit{hyperledger composer} implementation of a business network. This business network is the main implementation of the Interlace efforts of creating a working block-chain, which consists mainly of chain-code implementations.
+
+\textit{"fabric"} is the hyperldger fabric base block-chain needed for starting and running the business network where the chain-code bits are executed on.
+
+Finally a web application has been implemented which uses AngularJS, a front-end framework provided by Google,  to work with the block-chain. That application is found in \textit{webapp}.
+
 \section{Architecture}
 
 The core architecture of the INTERLACE project presented next is multi-layered and concentrates on being scalable and highly distributable in contrast to the current monolithic payment platform used by Sardex.
@@ -184,7 +209,7 @@ Profiles:
 
 Docker and Docker Compose are the core technologies used to start containerized services which finally start the actual block-chain and its components. Hyperledger fabric developer offer images which are ready to be started right away when provided with the correct configuration locations.
 
-The composer file is defining four container images. In figure \ref{lst:composeImages} a shortened composer yaml-file shows the services (or images) started when \textit{docker-compose up} is called. One for the certification authority (line 2), one for the orderer (line 4), one for the peer (line 6) and also an additional container (line 8) the peer is storing data to. That additional container is a NoSQL database called CouchDB. 
+The compose file is defining four container images. In figure \ref{lst:composeImages} a shortened compose yaml-file shows the services (or images) started when \textit{docker-compose up} is called. One for the certification authority (line 2), one for the orderer (line 4), one for the peer (line 6) and also an additional container (line 8) the peer is storing data to. That additional container is a NoSQL database called CouchDB. 
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -203,9 +228,16 @@ services:
 \end{minipage}
 \end{center}
 
+
+
 \subsection{cto-model}
 
-\todo{new cto-model}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=1.0\textwidth]{Figures/cto-model}
+  \caption{\bf\small CTO Model Structure used by hyperledger composer}
+  \label{fig:prototype-net}
+\end{figure}
 
 \section{Prototype}
 \label{sec:prototype}

@@ -6,10 +6,10 @@
 Eduard Hirsch
 \end{center}
 
-\section{Directory Structure}
-\label{sec:directory}
+\section{Project Structure}
+\label{sec:project-structure}
 
-Before introducing the actual architecture and implementation the structure of the project is described in order to know what to find where. In figure \ref{fig:directory-structure} the main directories are shown and also separate the main components of the business network.
+Before introducing the actual architecture and implementation the structure of the project is described in order to know what to find where. In figure \ref{fig:directory-structure} the main directories are shown which also separate the main components of the business network.
 
 \begin{figure}[htbp]
 \centering
@@ -25,11 +25,13 @@ Before introducing the actual architecture and implementation the structure of t
 \label{fig:directory-structure}
 \end{figure}
 
-Explaining further the folder \textit{"chain"}  contains a \textit{hyperledger composer} implementation of a business network. This business network is the main implementation of the Interlace efforts of creating a working block-chain, which consists mainly of chain-code implementations.
+Explaining further the folder \textit{"chain"}  contains a \textit{hyperledger composer} implementation of a business network. This business network is the main implementation of the Interlace efforts of creating a working block-chain, which consists mainly of chain-code implementations. But also scripts to deploy and update the chain-code as well as making the network accessible by starting it on the hyperledger fabric chain. 
 
-\textit{"fabric"} is the hyperldger fabric base block-chain needed for starting and running the business network where the chain-code bits are executed on.
+\textit{"fabric"} is the hyperldger fabric base block-chain needed for running a business network where the chain-code bits are executed on. The chain-code bits from directory \textit{chain} are compiled to a \textit{.bna} file which are then deployed to a fabric network. Those bna-files (also called banana files) can't be used by default by hyperledger fabric. They are rather part of a virtual environment like infrastructure provided by hyperledger composer. Thus the API components of composer provide wrappers to make a composer implementation run on a pure fabric network.
 
-Finally a web application has been implemented which uses AngularJS, a front-end framework provided by Google,  to work with the block-chain. That application is found in \textit{webapp}.
+Finally a web application has been implemented which uses AngularJS, a front-end framework provided by Google,  to work with the block-chain. That application is found in \textit{webapp}. This application uses a Swagger\footnote{\url{https://swagger.io/}} based REST-server implementation which comes with hyperledger composer framework.
+
+A more detailed description of the directory structures can be found in subsequent sections where the respective parts are explained in depth.
 
 \section{Architecture}
 
@@ -64,7 +66,7 @@ In figure \ref{fig:prototype-net} the current working environment is shown. It i
 
 Starting from a Certification Authority (\textbf{CA}) a user may issue a unique identity which can be verified any time by anyone participating in the network. Those identities are part of the process of giving members of the circuit right to work with and facilitate the network with particular roles and access privileges. The actual empowering of a user takes place inside of the membership provider (\textbf{MSB}).
 
-Nevertheless, the power of an MSP goes beyond simply caring about who is a network participant or member of a particular channel. An MSP is able of identifying specific roles an actor might play either within the scope of the organization the MSP represents (e.g., admins, or as members of a sub-organization group), and defines the foundation for giving access privileges in the context of a network and channel (e.g., channel admins, readers, writers). More details can be found on the documentations web-site of hyperledger fabric\footnote{https://hyperledger-fabric.readthedocs.io/en/master/membership/membership.html}.
+Nevertheless, the power of an MSP goes beyond simply caring about who is a network participant or member of a particular channel. An MSP is able of identifying specific roles an actor might play either within the scope of the organization the MSP represents (e.g., admins, or as members of a sub-organization group), and defines the foundation for giving access privileges in the context of a network and channel (e.g., channel admins, readers, writers). More details can be found on the documentations web-site of hyperledger fabric\footnote{\url{https://hyperledger-fabric.readthedocs.io/en/master/membership/membership.html}}.
 
 Due to simplicity reasons and in order to set-up the prototype network quickly, access/role management has been reduced to a minimum. Section \ref{sec:id-management} focus on a more detailed explanation on how those things might work or might be changed to in case of large scale scenarios.  
 
@@ -149,7 +151,7 @@ PeerOrgs:
 \end{minipage}
 \end{center}
 
-More details of how to configure the network in higher depth kindly consult the official hyperledger fabric documentation\footnote{https://hyperledger-fabric.readthedocs.io} which is a valuable source and should be studied in detail in order to build fabric based networks.
+More details of how to configure the network in higher depth kindly consult the official hyperledger fabric documentation\footnote{\url{https://hyperledger-fabric.readthedocs.io}} which is a valuable source and should be studied in detail in order to build fabric based networks.
 
 In addition to the original fabric documentation a reference guide called "Hands-On Blockchain with Hyperledger" \cite{HandsOnBlockchainHyperledger2018} was used to build this network.
 
@@ -228,9 +230,33 @@ services:
 \end{minipage}
 \end{center}
 
+Also docker-composer is creating a virtual network environment where the service containers defined in that definition are reachable among themselves using the particular domain names used in that configuration.
 
+Each of the services starts their respective application which is handling the allotted requests. The certification authority (CA) is started by calling \textit{fabric-ca-server}, the orderer is executing the same-named command \textit{orderer}, the only peer (peer0) runs \textit{peer node start} and the CouchDB image "couchdb" is started without specifying an additional command because the start-up process is handled by the container image itself.   
+
+The CA might be replaced for a real-world productive solution by a different authority supporting ECDSA certificates. Fabric only supplies this implementation to get a network quickly up and running.
+
+\textbf{Cryptographic Material}
+
+Except from couchdb all other services need to be configured with the network structure as well as the appropriate public private key infrastructure. In the \textit{chain} directory another folded called \textit{network} can be found. This folder contains templates of configtx.ymal as well as crypto-config.yaml. 
+
+Those template are, as mentioned, for generating the genesis-block as well as the keys needed for the respective service. The generation has been scripted and can be done by calling \textit{build.sh} which is also located in the same directory like the yaml-files. The results of running the build script are
+
+\begin{itemize}
+	\item interlace-channel.tx
+	\item interlace-genesis.block
+	\item crypto-config\ directory
+\end{itemize}
+
+These generated files as well as the directory are finally shared using docker volumes \footnote{\url{https://docs.docker.com/storage/volumes/}} for the respective services. A detailed description on how to configure the services can be found at the online documentation of fabric\footnote{\url{https://hyperledger-fabric.readthedocs.io}} but also at \cite{HandsOnBlockchainHyperledger2018}.
 
 \subsection{cto-model}
+
+The CTO-model is specific to hyperledger composer framework and offers a possibility to set-up a ground model which is imposed onto the chain-code implementation as well as on the block-chain residing on the peers. 
+
+The model created for Interlace project has 2 main \textit{transactions}, that are \textit{CreditTransfer} and \textit{DebitTransfer} and inherited by \textit{Transfer}. \textit{DebitTansfer} actually also needs a second transaction named \textit{DebitTransferAcknowledge} to be performed, thus it may be counted as a main transaction as well. Two other transactions supporting the functionality of the network are \textit{InitBlockchain} and \textit{CleanupPendingTransfer}.
+
+Transfers are handling \textit{assets}, which means creating and updating them. When the main transfers are executed they are changing \textit{Account}-assets, namely, \textit{SysAccount} and \textit{MemberAccount} which are inheriting from it. \textit{DebitTransfer} also needs \textit{PendingTransfer}-asset for creating transfers which haven't yet been confirmed. \textit{DeltaDebt} collects all transfers with the negative amount portion to log when the debt has to be paid back.
 
 \begin{figure}[htbp]
   \centering
@@ -242,7 +268,7 @@ services:
 \section{Prototype}
 \label{sec:prototype}
 
-The prototype is a block-chain realisation of INTERLACE, can be found on GitHub\footnote{https://github.com/InterlaceProject/InterlaceBlockchain} and is based on the specifications created in deliverable D3.1\cite{INTERLACE_D31} as well as the ASIM Specification of the requirements.
+The prototype is a block-chain realisation of INTERLACE, can be found on GitHub\footnote{\url{https://github.com/InterlaceProject/InterlaceBlockchain}} and is based on the specifications created in deliverable D3.1\cite{INTERLACE_D31} as well as the ASIM Specification of the requirements.
 
 First it is necessary to install the pre-requisites which are available for Linux and Mac OS. Currently these are the recommended operating systems, however, with additional effort it might be possible to run the INTERLACE blockchain on Windows directly. To support windows user a virtual machine set-up is also available.
 
@@ -250,9 +276,9 @@ Additionally, it is also important to set-up a development environment described
 
 \subsection{Install}
 
-This part of the documents talks about how to set-up and run the business network on your machine. However, before it is actually possible to begin it is necessary to install the pre-requisites which are listed at the hyperledger composer documentation\footnote{https://hyperledger.github.io/composer/latest/installing/installing-prereqs.html}. The website also offers a download where a script for installing all the requirements for a machine is provided.
+This part of the documents talks about how to set-up and run the business network on your machine. However, before it is actually possible to begin it is necessary to install the pre-requisites which are listed at the hyperledger composer documentation\footnote{\url{https://hyperledger.github.io/composer/latest/installing/installing-prereqs.html}}. The website also offers a download where a script for installing all the requirements for a machine is provided.
 
-Nevertheless, for windows user those script won't help because for now most of the packages are not yet prepared (as of writing) for a windows operating systems. For this user group a virtual machine has been prepared which is also installing all the necessary frameworks and software tools during provisioning. This virtual machine is controlled by vagrant\footnote{https://www.vagrantup.com/} and uses hyper-v or virtual box as hypervisor (two different branches). That VM configuration is published at GitHub\footnote{https://github.com/hirsche/hyperledger}.
+Nevertheless, for windows user those script won't help because for now most of the packages are not yet prepared (as of writing) for a windows operating systems. For this user group a virtual machine has been prepared which is also installing all the necessary frameworks and software tools during provisioning. This virtual machine is controlled by vagrant\footnote{\url{https://www.vagrantup.com/}} and uses hyper-v or virtual box as hypervisor (two different branches). That VM configuration is published at GitHub\footnote{\url{https://github.com/hirsche/hyperledger}}.
 
 \textbf{Environment Start-Up}
 
@@ -278,13 +304,13 @@ Depending on the operating system it might be also necessary to update and resta
 
 \textbf{Run fabric block chain (the first time)}
 
-Now the main configurations have been done and hyperledger fabric can be started, which acts as a base for hyperledger composer. To continue the GitHub repository \footnote{https://github.com/InterlaceProject/InterlaceBlockchain} if not yet done needs to be downloaded by using the git visioning system by calling
+Now the main configurations have been done and hyperledger fabric can be started, which acts as a base for hyperledger composer. To continue the GitHub repository \footnote{\url{https://github.com/InterlaceProject/InterlaceBlockchain}} if not yet done needs to be downloaded by using the git visioning system by calling
 
 \begin{lstlisting}[language=bash]
 	git clone https://github.com/InterlaceProject/InterlaceBlockchain.git
 \end{lstlisting}
 
-In the created directory "InterlaceBlockchain" the business network implementation including a web application can be found. The next listing shows the bash script which downloads several fabric docker container and finally starts them using docker-composer \footnote{https://docs.docker.com/compose/}:
+In the created directory "InterlaceBlockchain" the business network implementation including a web application can be found. The next listing shows the bash script which downloads several fabric docker container and finally starts them using docker-composer \footnote{\url{https://docs.docker.com/compose/}}:
 
 \begin{lstlisting}[language=bash]
 	cd fabric
@@ -337,15 +363,11 @@ Once the network is running (no playground needed) it is also possible to start 
 
 starts the server and allows to get an overview of the restful interface by opening
 
-\begin{lstlisting}
-http://interlace.chain:3000/explorer
-\end{lstlisting}
+\url{http://interlace.chain:3000/explorer}
 
 in a browser. The REST interface itself may be contacted over
 
-\begin{lstlisting}
-http://interlace.chain:3000/
-\end{lstlisting}
+\url{http://interlace.chain:3000/}
 
 when using it together with an external application. In case you didn't set-up the host interlace.chain in your hosts file and you are running all the services locally without a VM you might also use localhost instead of interlace.chain as host name.
 
@@ -415,13 +437,34 @@ After that a development server can be started by calling
 
 npm will start a web server at port 4200. If you work locally it also tries to open a browser which is showing the web application, otherwise you'd need start a browser manually and enter the URL by yourself. This is the URL where the server can be reached:
 
-\begin{lstlisting}
-http://interlace.chain:4200
-\end{lstlisting}
+\url{http://interlace.chain:4200}
 
 The web page is based on AngularJS and communicates over REST with our previously started REST server facilitating asynchronous AJAX-request.
 
 \section{Technical Details}
+
+\begin{figure}[htbp]
+\centering
+\begin{minipage}{5cm}
+\dirtree{%
+.1 chain.
+	.2 \textbf{lib/}.
+	.2 \textbf{models/}.
+	.2 \textbf{network/}.
+	.2 connection.json.
+	.2 data.json.
+	.2 \textcolor{green}{initNetwork.sh}.
+	.2 package-lock.json.
+	.2 package.json.
+	.2 permissions.acl.
+	.2 queries.qry.
+	.2 \textcolor{green}{updateNetwork.sh}.
+	.2 \textcolor{green}{startRestServer.sh}.
+}
+\end{minipage}
+\caption{\bf\small Chain-Code Directory Structure}
+\label{fig:chain-structure}
+\end{figure}
 
 \begin{verbatim}
     

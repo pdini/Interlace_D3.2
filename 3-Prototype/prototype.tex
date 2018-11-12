@@ -391,7 +391,37 @@ If you've decided to install and use Composer Playground it can be started using
 
 The standard configuration opens a browser connecting to playground at localhost with port 8080. If you've running playground in a separate virtual environment like e.g. in a docker container, it may be necessary to start the browser manually, determine the VM-/Containers-IP and fill in the address manually in the URL field.
 
-\todo{screenshots of playground}
+Composer Playground helps by providing a basic web interface to interact with the hyperledger fabric block-chain, on which hyperledger composer is acting as an additional wrapper around it. Composer creates admin cards in order to connect to the block-chain. These cards can be created over the web interface or over the command line interface. When the scripts of the previous sections have been used and no error messages occurred two cards should have been created and visible when opening hyperledger playground. This is illustrated in figure \ref{fig:admin-cards}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{Figures/admin-cards}
+  \caption{\bf\small Admin Cards in Hyperledger Playground}
+  \label{fig:admin-cards}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{Figures/edit-network}
+  \caption{\bf\small Edit a network in Hyperledger Playground}
+  \label{fig:edit-network}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.7\textwidth]{Figures/test-network}
+  \caption{\bf\small Test a network in Hyperledger Playground}
+  \label{fig:test-network}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{Figures/submit-credit-transfer}
+  \caption{\bf\small Submit a (credit) transfer in Hyperledger Playground}
+  \label{fig:submit-credit-transfer}
+\end{figure}
+
+\todo{screenshots description}
 
 \textbf{Run Transactions with composer-cli}
 

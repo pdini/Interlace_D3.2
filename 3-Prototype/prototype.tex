@@ -582,14 +582,32 @@ enum Unit {
 \end{minipage}
 \end{center}
 
-\subsection{Transactions}
-\label{sec:transactions}
+\subsection{Linking Transactions}
+\label{sec:link transactions}
 
-There are two JavaScript files which contain the available transactions of the network. It is \textit{init.js} and the second one is \textit{transactions.js}.
+There are two JavaScript files which contain the available transactions of the network. It is \textit{init.js} and the second one is \textit{transactions.js}. Before going into details on what these files contain a short sample is given on how transaction of the CTO-model are mapped to a JavaScript function. Listing \ref{lst:linkTransaction} gives a short example how \textit{CreditTransfer} transaction are linked to a JavaScript function with the same name.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=javascript,firstnumber=1,caption={\bf\small Connection of JavaScript function CreditTransfer to CTO-model transaction type}, captionpos=b,label=lst:linkTransaction]
+/**
+ * CreditTransfer transaction
+ * @param {net.sardex.interlace.CreditTransfer} transfer
+ * @transaction
+ */
+async function CreditTransfer(transfer) { [...] }
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+In this example the JavaScript name of the function is not import. It is rather the annotation with \textit{@transaction} as well as defining the parameter(s) of the function and to which type they are referring to. In detail at line 3 parameter \textit{transfer} gets linked to CTO-model type \textit{net.sardex.interlace.CreditTransfer}. In case a CreditTransfer is invoked usually using a JSON string, this string is converted to a type in JavaScript which has the same properties like \textit{net.sardex.interlace.CreditTransfer} has and provided as \textit{transfer} input parameter.
+
+Then during execution the input parameter transfer may be used like any JavaScript object and contains all the information necessary to process that transaction request. Important for the processing in JS is that the code is deterministic and evaluates to the same result on different peers.
+
+\subsection{Init Blockchain}
 
 The only transaction in \textit{init.js} should be only executed once otherwise it will leave you with a inconsistent block-chain if executed at all. The reason is that this initialisation script is setting up couple of participants with an account asses each to immediately test the block-chain. Thus, after the "InitBlockchain" transaction has been executed the chain contains at least two members and two accounts in order to move money around by applying credit- and debit-operations.
-
-\textbf{InitBlockchain Transaction}
 
 Listing \ref{lst:initBlock} shows parts of the actual creation of an asset as well as a participant. It uses \textit{getFactory()} which is part of the composer API to generate new instances of various types. The factory offers a function \textit{newResource} to actually create first an "Individual" from namespace \textit{net.sardex.interlace} and afterwards a "CCAccount" residing in the same namespace. The namespace is not visible in the script of \ref{lst:initBlock} because it has been configured in config.js file and applied to the config object.
 
@@ -626,12 +644,12 @@ await accReg.addAll([a1]);
 
 Once the registries are available they can be called like in line 14 and 17 with the matching type-category to finally ask for adding a new entry to the chain. Hyperledger Composer API also has  functions for reading, removing or update included. The documentation for the AssetRegistry\footnote{\url{https://hyperledger.github.io/composer/v0.19/api/runtime-assetregistry}} and for the \textit{ParticipantRegistry}\footnote{\url{https://hyperledger.github.io/composer/v0.19/api/runtime-participantregistry}} can be found in the composer documentation.
 
-\textbf{Main Payment Transactions}
+\subsection{Main Payment Transactions}
 
 \todo{CREDIT \& DEBIT \& Acknowledge}
 \todo{DeltaDebt}
 
-\textbf{Additional Transactions}
+\subsection{Additional Transactions}
 
 \todo{Cleanup Pending Transfer}
 

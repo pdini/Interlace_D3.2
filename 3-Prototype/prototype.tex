@@ -251,6 +251,7 @@ Those template are, as mentioned, for generating the genesis-block as well as th
 These generated files as well as the directory are finally shared using docker volumes \footnote{\url{https://docs.docker.com/storage/volumes/}} for the respective services. A detailed description on how to configure the services can be found at the online documentation of fabric\footnote{\url{https://hyperledger-fabric.readthedocs.io}} but also at \cite{HandsOnBlockchainHyperledger2018}.
 
 \subsection{cto-model}
+\label{sec:cto-model}
 
 The CTO-model is specific to hyperledger composer framework and offers a possibility to set-up a ground model which is imposed onto the chain-code implementation as well as on the block-chain residing on the peers. 
 
@@ -271,6 +272,8 @@ On several occasions event are emitted which may be consumed by an application o
 
 Finally there are couple of \textit{enum} types giving states names like for operations and units as well as account and group types.
 
+A detailed explanation of the model language can be found the official hyperledger composer documentation\footnote{\url{https://hyperledger.github.io/composer/latest/reference/cto_language.html}}
+
 \section{Prototype}
 \label{sec:prototype}
 
@@ -278,7 +281,7 @@ The prototype is a block-chain realisation of INTERLACE, can be found on GitHub\
 
 First it is necessary to install the pre-requisites which are available for Linux and Mac OS. Currently these are the recommended operating systems, however, with additional effort it might be possible to run the INTERLACE blockchain on Windows directly. To support windows user a virtual machine set-up is also available.
 
-Additionally, it is also important to set-up a development environment described at the composer GitHub repository. If you do not want to set up the complete environment it would be still recommended to install and start Composer Playground. Playground enables you to connect, alter and test the INTERLACE payment network. Nevertheless, playground is not required and you might use composer-cli or other methods to utilized the network.
+Additionally, it is also important to set-up a development environment described at the composer GitHub repository. If development is not planned and setting up a complete environment not necessary, it would be still recommended to install and start Composer Playground. Playground enables someone to connect, alter and test the INTERLACE payment network. Nevertheless, playground is not required and might it might be possible to use composer-cli or other methods to utilized the network.
 
 \subsection{Install}
 
@@ -335,7 +338,7 @@ Finally, after fabric has been started the next step is to initialize the block 
 
 \textbf{./initNetwork.sh} will copy all models and script to the network peers to make them accessible in the hyperledger blockchain. The last step in the script starts the business network.
 
-You may further use playground to access and test Credit- or DebitTransfer transactions. \textbf{data.json} should act as a helper to init the network by hand, but it is recommended to update the JavaScript function \textit{initBlockchain(transfer)} in \textit{./chain/lib/init.js}. That chain-code part is executed when transaction InitBlockchain is submitted. Be careful to run \textbf{InitBlockchain} only once otherwise errors or duplicate entries might happen resulting in a inconsistent chain.
+It may be further convenient to access network using playground and test Credit- or DebitTransfer transactions. \textbf{data.json} should act as a helper to init the network by hand, but it is recommended to update the JavaScript function \textit{initBlockchain(transfer)} in \textit{./chain/lib/init.js}. That chain-code part is executed when transaction InitBlockchain is submitted. Be careful to run \textbf{InitBlockchain} only once otherwise errors or duplicate entries might happen resulting in a inconsistent chain.
 
 \textbf{Network updates after chain-code changes}
 
@@ -375,7 +378,7 @@ in a browser. The REST interface itself may be contacted over
 
 \url{http://interlace.chain:3000/}
 
-when using it together with an external application. In case you didn't set-up the host interlace.chain in your hosts file and you are running all the services locally without a VM you might also use localhost instead of interlace.chain as host name.
+when using it together with an external application. In case host interlace.chain has not been set-up and all the services are running locally without a VM it might be also possible to use localhost instead of interlace.chain as host name. Nevertheless, it is highly recommended to use "interalce.chain" because everything has been testing using that host name.
 
 \subsection{Working with the environment}
 
@@ -391,7 +394,9 @@ If you've decided to install and use Composer Playground it can be started using
 
 The standard configuration opens a browser connecting to playground at localhost with port 8080. If you've running playground in a separate virtual environment like e.g. in a docker container, it may be necessary to start the browser manually, determine the VM-/Containers-IP and fill in the address manually in the URL field.
 
-Composer Playground helps by providing a basic web interface to interact with the hyperledger fabric block-chain, on which hyperledger composer is acting as an additional wrapper around it. Composer creates admin cards in order to connect to the block-chain. These cards can be created over the web interface or over the command line interface. When the scripts of the previous sections have been used and no error messages occurred two cards should have been created and visible when opening hyperledger playground. This is illustrated in figure \ref{fig:admin-cards}.
+\textbf{The Admin Cards}
+
+Composer Playground helps by providing a basic web interface to interact with the hyperledger fabric block-chain, on which hyperledger composer is acting as an additional wrapper. Composer creates cards in order to connect to the block-chain. These cards can be created over the playground web interface or over the command line interface. For Interlace those cards are created by \textit{initNetwork.sh} explained in section \ref{sec:prototype}. When those scripts have been executed and no error messages occurred two cards should have been created and visible when opening hyperledger playground. This is illustrated in figure \ref{fig:admin-cards}.
 
 \begin{figure}[htbp]
   \centering
@@ -400,12 +405,39 @@ Composer Playground helps by providing a basic web interface to interact with th
   \label{fig:admin-cards}
 \end{figure}
 
+Those cards provide all information needed to connect to the Interlace block-chain business network. In particular there have been installed two cards:
+
+\begin{itemize}
+	\item Peer Admin Card (PeerAdmin@sardex-open-network)
+	\item Business Network Card (admin@sardex-open-network)
+\end{itemize}
+
+\textit{Peer Admin Cards} are cards (as the name suggests) used to interact with the peers. Users connecting over that card receive the permissions to manage chain-code deployments or changes on the peers. Thus it is a crucial part of every network.
+
+Access to Interlace/Sardex Business Network is granted to another user through the provision of a \textit{Business Network Card} which is called \textit{admin@sardex-open-network}.
+
+For Interlace we currently only have one user in place which is the admin user. However, if the network gets deployed it'll be necessary to grant acceess to other users which can be done by creating an additional Business Network Card for that particular user. Be aware that for that user a participant need to be registered first in order to link it with a new network card.
+
+\textbf{Edit Network}
+
+Figure \ref{fig:edit-network} illustrates how a particular business network may be edited over playground directly. For Interlace this means that you can e.g. quickly try out some changes on the JavaScript files and see if the changes are deployable by pressing the "Deploy changes"-button. However, for most developers it might prefer the usage of a common IDE\footnote{\url{https://en.wikipedia.org/wiki/Integrated_development_environment}}, which offers far better assistance during development, and use the provided scripts \textit{initNetwork.sh} as well as \textit{updateNetwork.sh}.
+
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.6\textwidth]{Figures/edit-network}
   \caption{\bf\small Edit a network in Hyperledger Playground}
   \label{fig:edit-network}
 \end{figure}
+
+\textbf{Test Network}
+
+The Interlace bloc-chain might be also tested directly with playground web interface instead of using the composer cli tools or launching the provided additional web application. In figure \ref{fig:test-network} you can see the playground test environment that comes with playground and is started by pressing "Test" in the menu-bar.
+
+On the left bar of that view you are provided with a list of the Interlace participants, assets as well as entry call "All Transactions". As the menu names might suggest when clicking on them you are receiving a list of those items which have been created on the chain. E.g. this view in \ref{fig:test-network} lists all \textit{Individuals} taking part in the Interlace-Test network. When looking into the main area of the screen-shot two "Individual"-participants have been registered. One member with ID "m1" and one with ID "m2".
+
+In addition it is possible here to add and change entries for participants and assets you might change for your customized tests.
+
+Finally the "All Transactions" menu entry guides to a list of all transactions executed on the Interlace chain. This list contains of course not just the transactions somebody has been submitted but also entries like e.g. "AddParticipant" or "IssueIdentity", thus, all changes to the block-chain recorded can be found here.
 
 \begin{figure}[htbp]
   \centering
@@ -414,6 +446,12 @@ Composer Playground helps by providing a basic web interface to interact with th
   \label{fig:test-network}
 \end{figure}
 
+\textbf{Submit a transaction}
+
+In figure \ref{fig:submit-credit-transfer} a submission dialogue is shown which raises when the "Submit Transaction"-button in screen-shot \ref{fig:test-network} is pressed. This dialogue gives the possibility to select one of all possible transactions executable on the Interlace network. In this dialogue a \textit{CreditTransfer} has been selected.
+
+In the black text-box the properties of that transactions can be provided over a JSON-String. The interface provides you with default values for the transaction specific ones.
+
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.5\textwidth]{Figures/submit-credit-transfer}
@@ -421,7 +459,9 @@ Composer Playground helps by providing a basic web interface to interact with th
   \label{fig:submit-credit-transfer}
 \end{figure}
 
-\todo{screenshots description}
+When all the necessary properties have been provided pressing "Submit" tries to commit the transaction to the block-chain. In case of an error it is shown with red text attached to the same dialogue. When everything goes as planned the transaction is endorsed, ordered and committed to peers. The resulting actions will be visible with the assets/participants as well as in the transaction log of the chain.
+
+Details on how to configure and initialize Interlace transactions are covered in the technical details section \ref{sec:technical-details}.
 
 \textbf{Run Transactions with composer-cli}
 
@@ -477,7 +517,9 @@ npm will start a web server at port 4200. If you work locally it also tries to o
 
 The web page is based on AngularJS and communicates over REST with our previously started REST server facilitating asynchronous AJAX-request.
 
-\section{Technical Details}
+\section{The Chain-Code}
+\label{sec:chain-code}
+
 
 \begin{figure}[htbp]
 \centering
@@ -502,17 +544,19 @@ The web page is based on AngularJS and communicates over REST with our previousl
 \label{fig:chain-structure}
 \end{figure}
 
-\begin{verbatim}
-    
-Sec: Technical Details:
-    - chain-code bits
-    - queries
-    - acl-file
-    - deployment
-    - web application
-    - docker-compose
-    - rest server https://hyperledger.github.io/composer/latest/reference/rest-server
 
-\end{verbatim}
+\todo{chain-code bits}
+\todo{queries}
+\todo{acl-file}
+\todo{deployment}
 
-\todo{more context, write}
+
+\section{Web Application}
+\label{sec:webapp}
+
+\todo {describe}
+
+\section{Further Technical Details}
+\label{sec:technical-details}
+
+\todo {rest server https://hyperledger.github.io/composer/latest/reference/rest-server}

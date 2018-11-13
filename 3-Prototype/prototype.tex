@@ -520,6 +520,7 @@ The web page is based on AngularJS and communicates over REST with our previousl
 \section{The Chain-Code}
 \label{sec:chain-code}
 
+The following part is describing the core business logic which is found in the \textit{chain} directory. The shell scripts ending with \textit{.sh} have been handled in section \ref{sec:prototype} except from \textit{startRestServer.sh} which is handled in the technical details \ref{sec:technical-details}. Given that this section focuses on the chain-code implementation which lays in the directory \textit{lib} illustrated in figure \ref{fig:chain-structure}.
 
 \begin{figure}[htbp]
 \centering
@@ -527,6 +528,10 @@ The web page is based on AngularJS and communicates over REST with our previousl
 \dirtree{%
 .1 chain.
 	.2 \textbf{lib/}.
+		.3 config.js.
+		.3 enums.js.
+		.3 init.js.
+		.3 transactions.js.
 	.2 \textbf{models/}.
 	.2 \textbf{network/}.
 	.2 connection.json.
@@ -544,6 +549,84 @@ The web page is based on AngularJS and communicates over REST with our previousl
 \label{fig:chain-structure}
 \end{figure}
 
+
+Explaining the four JavaScript files the following can be said: \textit{config.js} contains the main configurations including things like time-outs, quick-transfer-amounts, transfer-type and account type mappings which is done in form of a JSON object.
+
+Unfortunately, composer doesn't offer static access to enumeration constants. All enumeration values of a type need to be address by a string value. That approach is quite dangerous and gives potentially space for a lot of common errors. Interlaces tries to solve this issue by setting up an object with "freezed"\footnote{\url{https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze}} attributes.
+
+In figure \ref{lst:enumMap} a JavaScript mapping of the cto-Model enum type \textit{Unit} in \ref{lst:enumCTO} is illustrated.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=javascript,firstnumber=1,caption={\bf\small JavaScript enumeration mapping}, captionpos=b,label=lst:enumMap]
+var Unit = Object.freeze({
+  'Euro': 'Euro',
+  'SRD': 'SRD'
+});
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+Using that way of enum-mapping a proper development environment is suggesting and auto-completing the possible values of an e.g. Unit when working with it. Instead there is the possibility as mentioned to directly work with string values. But writing \textit{Unit.Euro} instead of \textit{"Euro"} ensures during development when sources linted\footnote{\url{https://en.wikipedia.org/wiki/Lint_\%28software\%29}} that the correct enumeration names have been applied.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=cto,firstnumber=1,caption={\bf\small enum in CTO-model}, captionpos=b,label=lst:enumCTO]
+enum Unit {
+  o Euro
+  o SRD
+}
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+\subsection{Transactions}
+\label{sec:transactions}
+
+There are two JavaScript files which contain the available transactions of the network. It is \textit{init.js} and the second one is \textit{transactions.js}.
+
+The only transaction in \textit{init.js} should be only executed once otherwise it will leave you with a inconsistent block-chain if executed at all. The reason is that this initialisation script is setting up couple of participants with an account asses each to immediately test the block-chain. Thus, after the "InitBlockchain" transaction has been executed the chain contains at least two members and two accounts in order to move money around by applying credit- and debit-operations.
+
+\textbf{InitBlockchain Transaction}
+
+Listing \ref{lst:initBlock} shows parts of the actual creation of an asset as well as a participant. It uses \textit{getFactory()} which is part of the composer API to generate new instances of various types. The factory offers a function \textit{newResource} to actually create first an "Individual" from namespace \textit{net.sardex.interlace} and afterwards a "CCAccount" residing in the same namespace. The namespace is not visible in the script of \ref{lst:initBlock} because it has been configured in config.js file and applied to the config object.
+
+Function \textit{newResource} uses namespace, type name and identifier as parameters and gives back a JavaScript representation of "net.sardex.interlace.Individual" in case of line number three. The same principle applied to line 8 when a CCAccount is created.
+
+To write a new resource to the ledger a registry of the type super category has to be acquired.
+
+Given that the Individual is a participant \textit{getParticipantRegistry} function need to be called in order to write it to the chain. For any asset like the CCAccount it is necessary to call \textit{getAssetRegistry} function to receive the right registry.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=javascript,firstnumber=1,caption={\bf\small chain-code adding a new resource in \textit{initBlockchain} function}, captionpos=b,label=lst:initBlock]
+let factory = getFactory();
+
+let m1 = factory.newResource(config.NS, 'Individual', 'm1');
+m1.firstName='f1';
+[...]
+
+let a1 = factory.newResource(config.NS, 'CCAccount', 'a1');
+[...]
+a1.balance=1000;
+a1.member=factory.newRelationship(config.NS, 'Individual', 'm1');
+[...]
+
+let partReg = await getParticipantRegistry(config.NS + '.Individual');
+await partReg.addAll([m1]);
+
+let accReg = await getAssetRegistry(config.NS + '.CCAccount');
+await accReg.addAll([a1]);
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+Once the registries are available they can be called like in line 14 and 17 with the matching type-category to finally ask for adding a new entry to the chain. Hyperledger Composer API also has  functions for reading, removing or update included. The documentation for the AssetRegistry\footnote{\url{https://hyperledger.github.io/composer/v0.19/api/runtime-assetregistry}} and for the \textit{ParticipantRegistry}\footnote{\url{https://hyperledger.github.io/composer/v0.19/api/runtime-participantregistry}} can be found in the composer documentation.
+
+\textbf{Main Payment Transaction}
 
 \todo{chain-code bits}
 \todo{queries}

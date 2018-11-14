@@ -799,11 +799,32 @@ let openDelta =
 \end{minipage}
 \end{center}
 
-All selected debts are iterated starting by the oldest first. The available portion of the amount gets subtracted from the current DeltaDebt asset. If the amount is bigger than the debt the rest of the amount is used in the next iteration step to clear the nearest (in terms of age) entry of delta debt. Thus this loop continues either till there is no amount left or all debts have been paid back which also means that the balance goes back having a positive value.
+All selected debts are iterated starting by the oldest first. The available portion of the amount gets subtracted from the current \textit{DeltaDebt} asset. If the amount is bigger than the debt the rest of the amount ($amount = amount - deptPos$) is used in the next iteration step to clear the nearest (in terms of age) entry of delta debt. Thus this loop continues either till there is no amount left or all debts have been paid back which also means in the latter case that the balance goes back having a positive value.
 
 \subsection{Additional Transactions}
 
-\todo{Cleanup Pending Transfer}
+There is an additional transaction important for maintenance issues. This transaction called \textit{CleanupPendingTransfer} is illustrated in listing \ref{lst:js-cleanupPending} and taking care of handling old entries of asset \textit{PendingTransfer}.
+
+In some cases pending transfers stay unconfirmed for ever because they e.g. have been issued wrongly by a user or where duplicates in case a connection had been interrupted together with a lost emitted acknowledge-request-event. In this cases because of legal and security reasons those transfers have to be set to \textit{Expired}.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=javascript,firstnumber=1,caption={\bf\small clearDebt JavaScript excerpt}, captionpos=b,label=lst:js-cleanupPending]
+let expiredPending =
+  await query('selectExpiredPendingTransfers', {now: (transfer.timestamp)});
+let aR = await getAssetRegistry(config.NS + '.PendingTransfer');
+
+// change all states to expired
+expiredPending.forEach(p => p.state = TransactionStatus.Expired);
+await aR.updateAll(expiredPending);
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+First the shown chain-code select all expired entries with query \textit{selectExpiredPendingTransfers}. Then it iterates all of them applying the new state. Finally, all entries are updated using the \textit{AssetRegistry}.
+
+As this is an maintenance transaction is should be executed only by an admin or a user with a specific role.
 
 \subsection{Queries}
 \label{subsec:queries}

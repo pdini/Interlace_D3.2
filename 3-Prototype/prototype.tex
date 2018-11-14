@@ -552,7 +552,7 @@ The following part is describing the core business logic which is found in the \
 
 Explaining the four JavaScript files the following can be said: \textit{config.js} contains the main configurations including things like time-outs, quick-transfer-amounts, transfer-type and account type mappings which is done in form of a JSON object.
 
-Unfortunately, composer doesn't offer static access to enumeration constants. All enumeration values of a type need to be address by a string value. That approach is quite dangerous and gives potentially space for a lot of common errors. Interlaces tries to solve this issue by setting up an object with "freezed"\footnote{\url{https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze}} attributes.
+Unfortunately, composer doesn't offer static access to enumeration constants. All enumeration values of a type need to be address by a string value. That approach is quite dangerous and gives potentially space for a lot of common errors. Interlaces tries to solve this issue by setting up an object with "freezed"\footnote{\url{https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze}} attributes.
 
 In figure \ref{lst:enumMap} a JavaScript mapping of the cto-Model enum type \textit{Unit} in \ref{lst:enumCTO} is illustrated.
 
@@ -645,18 +645,178 @@ await accReg.addAll([a1]);
 Once the registries are available they can be called like in line 14 and 17 with the matching type-category to finally ask for adding a new entry to the chain. Hyperledger Composer API also has  functions for reading, removing or update included. The documentation for the AssetRegistry\footnote{\url{https://hyperledger.github.io/composer/v0.19/api/runtime-assetregistry}} and for the \textit{ParticipantRegistry}\footnote{\url{https://hyperledger.github.io/composer/v0.19/api/runtime-participantregistry}} can be found in the composer documentation.
 
 \subsection{Main Payment Transactions}
+\label{subsec:main-payment-transactions}
+The current implementation comes with credit and debit transactions which are working according the specifications made in D3.1 and D3.1 besides one exception explained at the end of this subsection which is talking about moving money and asset \textit{DeltaDebt}.
 
-\todo{CREDIT \& DEBIT \& Acknowledge}
-\todo{DeltaDebt}
+\textbf{CreditTransfer chain-code}
+
+Let's now focus on the first of the two payment transactions - the credit transfers. In listing \ref{lst:js-credittransfer} the core of JavaScript function is shown without the additional function wrappers.
+
+Code has been written in a way that is supposed to be readable by people which may not be JavaScript experts. Nevertheless, to give a quick explanation, the keyword \textit{await}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await}} which deals with asynchronous JavaScript function calls and (in simplified terms) just waits till the prefixed function completes its task. If \textit{await} would be missing an asynchronous JavaScript (like previewCheck) would be called and executed in the background and the execution of the current thread would continue immediately.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=javascript,firstnumber=1,caption={\bf\small CreditTransfer JavaScript}, captionpos=b,label=lst:js-credittransfer]
+//some basic checks
+await checkAmountPlausible(transfer);
+
+// preview check throws error in case of violation
+await previewCheck(transfer);
+
+// account limits checks throws error in case of violation
+await accountLimitCheck(
+  transfer.senderAccount,
+  transfer.recipientAccount,
+  transfer.amount);
+
+// check account limits and emits event if violated
+await checkAccountLimitsAlerts(transfer.senderAccount);
+
+// perform the transfer
+await moveMoney(transfer);
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+The \textit{transfer}-object used in the listing is pre-filled by the chain-code API after a CreditTransfer has been invoked. It is created from the parameters and values of the JSON-object which is part of the submitted transaction and which is following the structure of the CTO-model from type \textit{net.sardex.interlace.CreditTransfer}.
+
+\textbf{DebitTransfer chain-code}
+
+The second function explained is the debit operation and is a bit more complex compared to a basic credit operation and shown in listing \ref{lst:js-debittransfer}. In that listing only the important part of the function is shown. The leading part calling \textit{checkAmountPlausible}, \textit{previewCheck} and \textit{accountLimitCheck} is exactly the same like in CreditTransfer and therefore left out to increase readability.
+
+One note for debit operations resulting from the specifications is, that the owner of the senderAccount from the debit transfer is the debitor which is also the buyer. Whereas the recipientAccount owner is regarded as the creditor which is selling something.
+
+Continuing further with the implementation, the core of the debit operation checks if an immediate transfer is possible (amount smaller than a predefined value) or if a confirmation of the other party is necessary. In case of an immediate transfer the money is moved the same way like in CreditTransfer by calling the \textit{moveMoney} function. If the transfer amount is too big a confirmation needs to be acquired from the debitor which is in our case the owner of the senderAccount of the transfer.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=javascript,firstnumber=1,caption={\bf\small DebitTransfer JavaScript}, captionpos=b,label=lst:js-debittransfer]
+// check for immediate transfer possibility
+if (transfer.amount <= config.debit.quick_transfer_amount) {
+  // perform the transfer
+  await moveMoney(transfer);
+
+  // check account limits and emits event if violated
+  await checkAccountLimitsAlerts(transfer.senderAccount);
+} else { // requires confirmation
+  // add the debit transfer to the pending queue
+  let otp = await insertPendingTransfer(transfer);
+
+  // create confirmation event RequestDebitAckReqAnswCompletion
+  // which is including the OTP and the sender account (of debitor)
+  [...]
+
+  // emit the event
+  emit(confirmReq);
+}
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+This is done by emitting an \textit{RequestDebitAcknowledge} event of namespace \textit{net.sardex.interlace} defined in the CTO-model which has a property \textit{otp} (One Time Pad) and a property \textit{debitorAccount} which is of type \textit{Account}. Such a DebitTransfer, which needs to be confirm, has to be stored for later. For that purpose a new asset has been created named PendingTransfer. So for every pending transfer a entry in PendingTransfer is going to be created. After than entry has been created by function \textit{insertPendingTransfer} it returns an OTP usable for the emitted event.
+
+\textbf{DebitTransferAcknowledge chain-code}
+
+Each entry in PendingTransfer is identified by an OTP in a way that a transfer can be unambiguously selected by providing an OTP. Currently the OTP is generated by hashing the transaction id of the debit transfer. However, if a debitor likes to confirm a transfer which he got informed by over the emitted event he just needs to pass the OTP as property for the \textit{DebitTransferAcknowledge} transaction.
+
+\textbf{Note:} For productive Systems that identification might include an additional key as for a large numbers of PendingTransfers the OTP generated in that way might not be unique any more.
+
+In listing \ref{lst:js-ack} the main part of \textit{DebitTransferAcknowledge}, which is different from the other transactions, is depicted. The variable \textit{ack} in the script is transaction object provided to the function, which contains the \textit{PendingTransfer} read into variable \textit{pT}. Then it is checked whether it is still in state pending, in case it is continued. In any other case an error is throws an the transaction is discarded (!not! recorded into the ledger).
+
+If the process is continued the timestamp of the transaction is checked against the \textit{expires} date property of the pending transfer. Consequently, if expired, the state is updated to \textit{"Expired"} and function \textit{DebitTransferAcknowledge} returns with a respective status (\textit{AcknowledgeStatus}).
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=javascript,firstnumber=1,caption={\bf\small RequestDebitAcknowledge JavaScript excerpt}, captionpos=b,label=lst:js-ack]
+[..]
+//get pending transaction
+let pT = ack.transfer;
+
+// varify state of pending transfer
+if (pT.state !== TransactionStatus.Pending) {
+  throw new Error('Transfer is not in state "' +
+    TransactionStatus.Pending + '" but in state "' + pT.state + '"');
+}
+
+// varify if pending transaction has been expired
+if (ack.timestamp >= pT.expires) {
+  //update state from Pending to Rejected
+  await updatePendingTransaction(pT, TransactionStatus.Expired);
+
+  //prepare return message
+  rS.status = TransactionStatus.Expired;
+  rS.description = 'OTP ' + pT.otp + ' is expired.';
+  return rS; //TODO: raise event
+}
+[..]
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+The later parts of the function after all of the checks have been passed and the debit transaction can be performed the execution steps are pretty much the same like in a CreditTransfer. The only difference is that in case of success or error the PendingTransfer asset of the transaction need to be update to Performed or Rejected respectively. A function called \textit{updatePendingTransaction} also used in line 14 of listing \ref{lst:js-ack} takes care of putting the asset PendingTransfer into the right state.
+
+Additionally in all cases \textit{updatePendingTransaction} has been applied also a status object called \textit{AcknowledgeStatus} is created and return by the function which contains the resulting status but also an error message in case something went wrong.
+
+\textbf{moveMoney \& DeltaDebt}
+
+Actual movement of an amount from one to an other account is performed by basic addition/subtraction of the respective account and finally updating the account assets in the ledger by facilitating the registry offered by hyperledger composer API.
+
+Another important step, however, which is part of that money transfer and shown in listing \ref{lst:js-movemoney} is a additional functionality and has not been explained in the former requirements documents of the Interlace project. This logic collects all debts, thus, every transactions which are causing the balance to get negative or to increase an already negative balance. Those debts are collected because they are handled similar to a loan. They don't cause any additional fees, nevertheless, those debts are having a due date till when they need to be paid back. For details of debt collection you may be also referred to the appendix.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=javascript,firstnumber=1,caption={\bf\small moveMoney JavaScript excerpt}, captionpos=b,label=lst:js-movemoney]
+[..]
+// check balance if DeltaDebt entry needs to be added
+// !after amount has been substracted!
+if (transfer.senderAccount.balance < 0) await createDeltaDebt(transfer);
+// check balance if clearing an open DeltaDebt is necessary
+// !before amount has been added!
+if ((transfer.recipientAccount.balance - transfer.amount) < 0) {
+  await clearDebt(transfer);
+}
+[..]
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+The creation of a debt handled by \textit{createDeltaDebt} is straight forward and just adds an entry to asset \textit{DeltaDebt} if a transaction has been detected which causes a negative balance or increases an already negative balance. A new \textit{DeltaDebt} entry receives an original amount, a current amount, an owner id and of course a due date when it needs to be paid back.
+
+If soever a transaction is adding money to the account owners balance former \textit{DeltaDebt} entries may be cleared which is done by querying all debts with an non-paid amount. This is illustrated in listing \ref{lst:js-cleardebt} where a rich query called \textit{selectDeltaDebt} is used to get all of those unpaid debts. Details that and other queries are discussed in subsection \ref{subsec:queries}.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=javascript,firstnumber=1,caption={\bf\small clearDebt JavaScript excerpt}, captionpos=b,label=lst:js-cleardebt]
+// query result sorted by "oldest" first
+let openDelta =
+  await query('selectDeltaDebt', {ID: (transfer.recipientAccount.member.memberID)});
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+All selected debts are iterated starting by the oldest first. The available portion of the amount gets subtracted from the current DeltaDebt asset. If the amount is bigger than the debt the rest of the amount is used in the next iteration step to clear the nearest (in terms of age) entry of delta debt. Thus this loop continues either till there is no amount left or all debts have been paid back which also means that the balance goes back having a positive value.
 
 \subsection{Additional Transactions}
 
 \todo{Cleanup Pending Transfer}
 
+\subsection{Queries}
+\label{subsec:queries}
 
-\todo{queries}
-\todo{acl-file}
-\todo{deployment}
+\todo{}
+
+\subsection{ACL-file}
+
+\todo{}
+
+\subsection{Deployment}
+
+\todo{}
 
 
 \section{Web Application}

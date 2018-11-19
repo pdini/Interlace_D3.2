@@ -9,7 +9,7 @@ Eduard Hirsch
 \section{Project Structure}
 \label{sec:project-structure}
 
-Before introducing the actual architecture and implementation the structure of the project is described in order to know what to find where. In figure \ref{fig:directory-structure} the main directories are shown which also separate the main components of the business network.
+Before introducing the actual architecture and implementation, the structure of the project is described in order to know what to find where. In Figure \ref{fig:directory-structure} the main directories are shown which also separate the main components of the business network.
 
 \begin{figure}[htbp]
 \centering
@@ -25,33 +25,35 @@ Before introducing the actual architecture and implementation the structure of t
 \label{fig:directory-structure}
 \end{figure}
 
-Explaining further the folder \textit{"chain"}  contains a \textit{hyperledger composer} implementation of a business network. This business network is the main implementation of the Interlace efforts of creating a working block-chain, which consists mainly of chain-code implementations. But also scripts to deploy and update the chain-code as well as making the network accessible by starting it on the hyperledger fabric chain. 
+Explaining further, the folder \textit{"chain"} contains a \textit{Hyperledger Composer} implementation of a business network. This business network is the main implementation of the INTERLACE work to create a working blockchain that consists mainly of chaincode\footnote{In the Hyperledger framework the language of Smart Contracts is referred to as `chaincode'.} implementations, but also of scripts to deploy and update the chaincode as well as to make the network accessible by starting it on the hyperledger fabric chain.
 
-\textit{"fabric"} is the hyperldger fabric base block-chain needed for running a business network where the chain-code bits are executed on. The chain-code bits from directory \textit{chain} are compiled to a \textit{.bna} file which are then deployed to a fabric network. Those bna-files (also called banana files) can't be used by default by hyperledger fabric. They are rather part of a virtual environment like infrastructure provided by hyperledger composer. Thus the API components of composer provide wrappers to make a composer implementation run on a pure fabric network.
+\textcolor{red}{\bf ToDo: Add a short paragraph to describe what Composer is.}
 
-Finally a web application has been implemented which uses AngularJS, a front-end framework provided by Google,  to work with the block-chain. That application is found in \textit{webapp}. This application uses a Swagger\footnote{\url{https://swagger.io/}} based REST-server implementation which comes with hyperledger composer framework.
+\textit{"fabric"} is the hyperledger fabric base blockchain needed for running a business network where the chaincode bits are executed on. The chaincode bits from directory \textit{chain} are compiled to a \textit{.bna} file (``blockchain network archive'') which is then deployed to a fabric network. These bna-files (also called banana files) can't be used by default by hyperledger fabric. They are, rather, part of a virtual infrastructure-like environment provided by hyperledger composer. Thus the API components of composer provide wrappers to make a Composer implementation run on a pure fabric network.
+
+Finally a web application has been implemented which uses AngularJS, a front-end framework provided by Google,  to work with the blockchain. This application is found in \textit{webapp}. This application uses a Swagger\footnote{\url{https://swagger.io/}}-based REST-server implementation which comes with the hyperledger composer framework.
 
 A more detailed description of the directory structures can be found in subsequent sections where the respective parts are explained in depth.
 
 \section{Architecture}
 
-The core architecture of the INTERLACE project presented next is multi-layered and concentrates on being scalable and highly distributable in contrast to the current monolithic payment platform used by Sardex.
+The core architecture of the INTERLACE project presented next is multi-layered and concentrates on being scalable and highly distributable, in contrast to the current monolithic payment platform used by Sardex.
 
-The chosen block-chain approach is going to be explained in detail. The technical challenges during the planning of that implementation strategies are discussed in subsequent sections of that chapter.
+The chosen blockchain approach is going to be explained in detail. The technical challenges during the planning of that implementation strategies are discussed in subsequent sections of this chapter.
 
 \subsection{Sardex Network}
 
-In deliverable D2.1 and D3.1 the current architecture has been written down using the AS(I)M approach and as mentioned before a working client-server application based on message-passing has been developed. This application was realized using the ICEF-framework which is founded on abstract state machines applying a programming language similar to ASM logic definitions.
+In deliverables D2.1 and D3.1 the current architecture was specified using the AS(I)M approach and, as mentioned before, a working client-server application based on message passing was developed. This application was realized using the ICEF-framework which is founded on abstract state machines applying a programming language similar to ASM logic definitions.
 
-That classic model was used to derive a new payment network based on block-chain approach. The thoughts for the new network comprise using a publicly maintained and an easy to use block-chain which supports the idea of a interest-free mutual credit system enabling account based balances rather than token based currencies only. These thoughts led to a prototypical implementation using hyperledger fabric together with hyperledger composer.
+The high-level functional model of D2.1 and D3.1 was used to derive a new payment network based on the blockchain approach. The new network platform involves using a publicly maintained and an easy-to-use blockchain which supports the principle of an interest-free mutual credit system enabling account-based balances rather than token-based (asset-based) currencies only. These considerations led to a prototypical implementation using hyperledger fabric together with hyperledger composer.
 
-Regardless of the choice of hyperledger environment it also has been important having a central payment network which is not only reliable and verifiable but also (to a specific extend) controllable in order to impose the basic Sardex payment rules on it.
+Independent of the choice of blockchain environment, it was also important to develop a central payment network which is not only reliable and verifiable but also (to a specific extent) controllable in order to impose the basic Sardex payment rules on it. \textcolor{red}{Thus, the first implementation of the INTERLACE blockchain is actually centralised. The advantage is easy scalability to a distributed architecture as more circuits are added in other parts of Italy and beyond.}
 
 \subsection{Hyperledger Fabric Network}
 
-The given network constraints were used while creating a new hyperledger fabric network which sets up a core environment offering a basic block-chain to interact with. Next a close look is taken on the actual implemented network and a description for the various parts is given.
+The given network constraints were used while creating a new hyperledger fabric network which sets up a core environment offering a basic blockchain to interact with. Next, we discuss in some detail the actual implemented network along with a description for the various parts.
 
-In figure \ref{fig:prototype-net} the current working environment is shown. It is utilising the possibilities hyperledger fabric is offering. When looking further into detail fabric actually imposes a structure to a newly created network for which the following main components can be singled out when focusing on Interlace:
+Figure \ref{fig:prototype-net} shows the current working environment, which uses the possibilities offered by hyperledger fabric. Upon closer scrutiny, fabric actually imposes a structure on a newly created network, of which the following main components can be singled out for INTERLACE:
 
 \begin{itemize}
 	\item Sardex as participating \textbf{organisation}
@@ -61,32 +63,32 @@ In figure \ref{fig:prototype-net} the current working environment is shown. It i
 	\item "Interlace" pseudo organisation
 		\subitem An \textbf{orderer} (named: orderer.sardex.net)
 		\subitem Interlace Membership Provider \textbf{(MSP)} with ID InterlaceOrdererMSP
-	\item Certification Authority short \textbf{CA}
+	\item Certification Authority (\textbf{CA})
 \end{itemize}
 
-Starting from a Certification Authority (\textbf{CA}) a user may issue a unique identity which can be verified any time by anyone participating in the network. Those identities are part of the process of giving members of the circuit right to work with and facilitate the network with particular roles and access privileges. The actual empowering of a user takes place inside of the membership provider (\textbf{MSB}).
+Starting from a \textbf{CA}, a user may issue a unique identity which can be verified anytime by anyone participating in the network. These identities are part of the process of giving members of the circuit the right to work with and facilitate the network with particular roles and access privileges. The actual empowering of a user takes place inside of the membership provider (\textbf{MSB}).
 
-Nevertheless, the power of an MSP goes beyond simply caring about who is a network participant or member of a particular channel. An MSP is able of identifying specific roles an actor might play either within the scope of the organization the MSP represents (e.g., admins, or as members of a sub-organization group), and defines the foundation for giving access privileges in the context of a network and channel (e.g., channel admins, readers, writers). More details can be found on the documentations web-site of hyperledger fabric\footnote{\url{https://hyperledger-fabric.readthedocs.io/en/master/membership/membership.html}}.
+However, the power of an MSP goes beyond simply keeping track of who is a network participant or member of a particular channel. An MSP is able to identify specific roles an actor might play  within the scope of the organisation the MSP represents (e.g., admins, or as members of a sub-organisation group), and in general defines the foundation for giving access privileges in the context of a network and channel (e.g., channel admins, readers, writers). More details can be found in the documentation on the hyperledger fabric website.\footnote{\url{https://hyperledger-fabric.readthedocs.io/en/master/membership/membership.html}}
 
-Due to simplicity reasons and in order to set-up the prototype network quickly, access/role management has been reduced to a minimum. Section \ref{sec:id-management} focus on a more detailed explanation on how those things might work or might be changed to in case of large scale scenarios.  
+For the sake of simplicity and in order to set up the prototype network quickly, access/role management has been reduced to a minimum. Section \ref{sec:id-management} focuses on a more detailed explanation on how these aspects work or might be changed in case of larger-scale scenarios.  
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.5\textwidth, clip, trim=1mm 1mm 1mm 1mm]{Figures/basic-network}
+  \includegraphics[width=0.7\textwidth, clip, trim=1mm 1mm 1mm 1mm]{Figures/basic-network}
   \caption{\bf\small Network structure implemented by the Prototype}
   \label{fig:prototype-net}
 \end{figure}
 
-The single \textbf{orderer} node of figure \ref{fig:prototype-net} takes care to establish atomic broadcasts, orders/batches transactions and also signs each batch (block) to create unique and well defined chains. The membership provider of the orderer uses a central and pre-configured certification authority \textbf{CA}.
+The single \textbf{orderer} node in Figure \ref{fig:prototype-net} is responsible for atomic broadcasts, orders/batches transactions, and also signs each batch (block) to create unique and well-defined chains. The membership provider of the orderer uses a central and pre-configured certification authority \textbf{CA}.
 
-For the network one \textbf{peer} is configured and started. This peer can be called the core of the environment because it is mainly handling so called \textit{smart logic} (chain-code) part. Being more specific peers are maintaining the ledger by first endorsing transactions (e.g. credit and debit transfers in case of Interlace), which is done by simulating them, and then they are finally validated and committed to the local ledger.
+This network configures and starts one \textbf{peer}. This peer can be called the core of the environment because its main task is to handle the so-called \textit{smart logic} (chaincode). As they are more specific, \textcolor{red}{[I do not understand what you mean by `specific' here...]} peers maintain the ledger by first endorsing transactions (e.g.\ credit and debit transfers in the case of INTERLACE), which is done by simulating them,\footnote{This is the Execution step in the Execute-Order-Validate Hyperledger architecture \cite{AndroulakiEtAl2018}} and then they are finally validated and committed to the local ledger.
 
-A very simple network is defined and described by the above scenario, which can be set-up following the instructions of section \ref{sec:prototype}. Certainly, that scenario needs to be extended in a real-world environment, thus a few hints and considerations are given by figure \ref{fig:prototype-net-ext} which will be explained in chapter \ref{ch:conclusion} section \ref{sec:future-scene}.
+A very simple network is defined and described by the above scenario, which can be set up following the instructions of Section \ref{sec:prototype}. Certainly, this scenario needs to be extended to a real-world environment, a few hints and considerations for which will be given in Figure \ref{fig:prototype-net-ext} and explained in Section \ref{sec:future-scene}.
 
 \subsection{Network Configuration Files}
 \label{sec:net-conf-files}
 
-There are three main configuration files providing a basic foundation for generating a preconfigured network. Those files are used to create the respective certificates as well as configuration files to spin up virtualized containers. Thus the following three yaml-files are an example of how to create a particular net as described in the previous section where the Interlace network has been shown:
+There are three main configuration files providing a basic foundation for generating a preconfigured network. Those files are used to create the corresponding certificates as well as configuration files to spin up virtualised containers. Thus, the following three yaml files are an example of how to create a particular net as described in the previous section where the INTERLACE network was shown:
 
 \begin{enumerate}
 	\item crypto-config.yaml
@@ -96,14 +98,14 @@ There are three main configuration files providing a basic foundation for genera
 
 \textbf{crypto-config.yaml}
 
-The \textit{crypto-config.yaml} contains the network topology and defines therefore the basic structure of it. With the configuration file it is possible to use a tool called \textit{cryptogen} which takes crypto-config.yaml as input to generate the cryptographic material necessary to run the block-chain. Being more specific keys for both the organisations and components that belong to those organisations.
+The \textit{crypto-config.yaml} contains the network topology and therefore defines its basic structure. With the configuration file it is possible to use a tool called \textit{cryptogen} which takes crypto-config.yaml as input to generate the cryptographic material necessary to run the blockchain. More specifically, \textit{cryptogen} generates the keys for both the organisations and the components that belong to those organisations.
 
-A part taken from crypto-config.ymal is shown in figure \ref{lst:cryConOrderers} and defines one or more orderers. In figure \ref{lst:cryConPeers} the yaml definition of the network peers is depicted.
+Listing \ref{lst:cryConOrderers} shows a part of crypto-config.ymal that defines one or more orderers. The yaml definition of the network peers is depicted in Listing \ref{lst:cryConPeers}.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
 \small
-\begin{lstlisting}[language=yaml,firstnumber=1,caption={\bf\small crypto-config.yaml excerpt - Orderer(s) definition},captionpos=b,label=lst:cryConOrderers]
+\begin{lstlisting}[language=yaml,firstnumber=1,caption={\bf\small crypto-config.yaml excerpt -- Orderer(s) definition},captionpos=b,label=lst:cryConOrderers]
 OrdererOrgs:
   # -----------------------------------------------------------------
   # Orderer
@@ -119,11 +121,11 @@ OrdererOrgs:
 \end{minipage}
 \end{center}
 
-In figure \ref{lst:cryConOrderers} in case of Interlace only one orderer is specified in line 5 with the name \textit{InterlaceOrderer}. Using the \textit{Domain} key the network \textit{sardex.net} domain is defined, thus, together with the \textit{Hostname} definition in line 11 the Interlace orderer can be reached using \textit{orderer.sardex.net}.
+Listing \ref{lst:cryConOrderers} shows that in the case of INTERLACE only one orderer is specified in line 5, with the name \textit{InterlaceOrderer}. The network domain \textit{sardex.net} is defined with the \textit{Domain} key. Thus, together with the \textit{Hostname} definition in line 11, the INTERLACE orderer can be reached using \textit{orderer.sardex.net}.
 
-For the various organisations peers can be defined. In figure \ref{lst:cryConPeers} the Interlace project specific definitions are shown. The first and only organisation for now is \textit{Sardex} in the \textit{sardex.net} domain. Continuing this theme further Sardex gets the \textit{Domain}-name \textit{sardex.sardex.net}. Taking a look the hierarchy one level down peers will receive domain names like peer0.sardex.sardex.net or peer1.sardex.sardex.net. As the template \textit{Count}-key only defines a value of \textit{1} there will consequently only be one peer with sub-domain name \textit{peer0}.
+Peers can be defined for the various organisations. For example, Listing \ref{lst:cryConPeers} shows the definitions specific to the INTERLACE project. The first and only organisation for now is \textit{Sardex} in the \textit{sardex.net} domain. Similarly, Sardex gets the \textit{Domain}-name \textit{sardex.sardex.net}. Taking a look at the hierarchy one level down, peers will receive domain names like peer0.sardex.sardex.net or peer1.sardex.sardex.net. As the template \textit{Count}-key only defines a value of \textit{1}, there will only be one peer with sub-domain name \textit{peer0}.
 
-As mentioned before user management is handled on a very small scale thus when setting the user count to 0 in line 18 no users in addition to the administrator are defined. 
+As mentioned above, user management is handled on a very small scale. Thus, when setting the user count to 0 in line 18 no users in addition to the administrator are defined.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -151,13 +153,13 @@ PeerOrgs:
 \end{minipage}
 \end{center}
 
-More details of how to configure the network in higher depth kindly consult the official hyperledger fabric documentation\footnote{\url{https://hyperledger-fabric.readthedocs.io}} which is a valuable source and should be studied in detail in order to build fabric based networks.
+For more details on how to configure the network to a greater depth, kindly consult the official hyperledger fabric documentation,\footnote{\url{https://hyperledger-fabric.readthedocs.io}} which is a valuable source and should be studied in detail in order to build fabric-based networks.
 
 In addition to the original fabric documentation a reference guide called "Hands-On Blockchain with Hyperledger" \cite{HandsOnBlockchainHyperledger2018} was used to build this network.
 
 \textbf{configtx.yaml}
 
-The second configuration-file named \textit{configtx.yaml} which is discussed next contains different but also some redundant configurations bits for the block-chain network. Another tool called \textit{configtxgen} picks up configtx.yaml and uses it to create configuration artefacts setting up a basic structure utilized by the actual block-chain network. This artefacts are:
+The second configuration-file named \textit{configtx.yaml} which is discussed next contains different but also some redundant configurations bits for the blockchain network. Another tool called \textit{configtxgen} picks up configtx.yaml and uses it to create configuration artefacts setting up a basic structure utilized by the actual blockchain network. This artefacts are:
 
 \begin{itemize}
 	\item orderer \textit{genesis block}
@@ -169,7 +171,7 @@ The second configuration-file named \textit{configtx.yaml} which is discussed ne
 broadcast to the orderer at Channel creation time. The anchor peer transactions, as the name might suggest, specify
 each Organisation's Anchor Peer on this channel." - stating the fabric documentation.
 
-The core configuration excerpt can be seen in figure \ref{lst:configTxProfiles}.
+The core configuration excerpt can be seen in Figure \ref{lst:configTxProfiles}.
 
 First, it is defining an orderer genesis block called \textit{InterlaceOrdererGenesis} containing one orderer handled by organization \textit{Interlace} together with some capabilities (not discussed here) as well as a consortium using the network.
 
@@ -209,9 +211,9 @@ Profiles:
 
 \textbf{docker-compose.yaml}
 
-Docker and Docker Compose are the core technologies used to start containerized services which finally start the actual block-chain and its components. Hyperledger fabric developer offer images which are ready to be started right away when provided with the correct configuration locations.
+Docker and Docker Compose are the core technologies used to start containerized services which finally start the actual blockchain and its components. Hyperledger fabric developer offer images which are ready to be started right away when provided with the correct configuration locations.
 
-The compose file is defining four container images. In figure \ref{lst:composeImages} a shortened compose yaml-file shows the services (or images) started when \textit{docker-compose up} is called. One for the certification authority (line 2), one for the orderer (line 4), one for the peer (line 6) and also an additional container (line 8) the peer is storing data to. That additional container is a NoSQL database called CouchDB. 
+The compose file is defining four container images. In Figure \ref{lst:composeImages} a shortened compose yaml-file shows the services (or images) started when \textit{docker-compose up} is called. One for the certification authority (line 2), one for the orderer (line 4), one for the peer (line 6) and also an additional container (line 8) the peer is storing data to. That additional container is a NoSQL database called CouchDB. 
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -253,9 +255,9 @@ These generated files as well as the directory are finally shared using docker v
 %\subsection{cto-model}
 %\label{sec:cto-model}
 
-%The CTO-model is specific to hyperledger composer framework and offers a possibility to set-up a ground model which is imposed onto the chain-code implementation as well as on the block-chain residing on the peers. 
+%The CTO-model is specific to hyperledger composer framework and offers a possibility to set-up a ground model which is imposed onto the chaincode implementation as well as on the blockchain residing on the peers. 
 
-%The model created for Interlace project has 2 main \textit{transactions}, that are \textit{CreditTransfer} and \textit{DebitTransfer} and inherited by \textit{Transfer}. \textit{DebitTansfer} actually also needs a second transaction named \textit{DebitTransferAcknowledge} to be performed, thus it may be counted as a main transaction as well. Two other transactions supporting the functionality of the network are \textit{InitBlockchain} and \textit{CleanupPendingTransfer}.
+%The model created for INTERLACE project has 2 main \textit{transactions}, that are \textit{CreditTransfer} and \textit{DebitTransfer} and inherited by \textit{Transfer}. \textit{DebitTansfer} actually also needs a second transaction named \textit{DebitTransferAcknowledge} to be performed, thus it may be counted as a main transaction as well. Two other transactions supporting the functionality of the network are \textit{InitBlockchain} and \textit{CleanupPendingTransfer}.
 
 %Transfers are handling \textit{assets}, which means creating and updating them. When the main transfers are executed they are changing \textit{Account}-assets, namely, \textit{SysAccount} and \textit{MemberAccount} which are inheriting from it. \textit{DebitTransfer} also needs \textit{PendingTransfer}-asset for creating transfers which haven't yet been confirmed. \textit{DeltaDebt} collects all transfers with the negative amount portion to log when the debt has to be paid back.
 
@@ -277,7 +279,7 @@ These generated files as well as the directory are finally shared using docker v
 \section{Prototype}
 \label{sec:prototype}
 
-The prototype is a block-chain realisation of INTERLACE, can be found on GitHub\footnote{\url{https://github.com/InterlaceProject/InterlaceBlockchain}} and is based on the specifications created in deliverable D3.1\cite{INTERLACE_D31} as well as the ASIM Specification of the requirements.
+The prototype is a blockchain realisation of INTERLACE, can be found on GitHub\footnote{\url{https://github.com/InterlaceProject/InterlaceBlockchain}} and is based on the specifications created in deliverable D3.1\cite{INTERLACE_D31} as well as the ASIM Specification of the requirements.
 
 First it is necessary to install the pre-requisites which are available for Linux and Mac OS. Currently these are the recommended operating systems, however, with additional effort it might be possible to run the INTERLACE blockchain on Windows directly. To support windows user a virtual machine set-up is also available.
 
@@ -291,7 +293,7 @@ Nevertheless, for windows user those script won't help because for now most of t
 
 \textbf{Environment Start-Up}
 
-Once the hyperledger environment is installed, the next step is about starting the INTERLACE environment. To make communication uniform the block-chain is configured to publish all services under the host name "interlace.chain". Windows user facilitating the suggested vagrant set-up the new hostname is added to your host-file during start-up time using the vagrant-hostmanager plug-in. Thus there is no need to configure the name manually.
+Once the hyperledger environment is installed, the next step is about starting the INTERLACE environment. To make communication uniform the blockchain is configured to publish all services under the host name "interlace.chain". Windows user facilitating the suggested vagrant set-up the new hostname is added to your host-file during start-up time using the vagrant-hostmanager plug-in. Thus there is no need to configure the name manually.
 
 \textbf{Configure Hostnames}
 
@@ -338,11 +340,11 @@ Finally, after fabric has been started the next step is to initialize the block 
 
 \textbf{./initNetwork.sh} will copy all models and script to the network peers to make them accessible in the hyperledger blockchain. The last step in the script starts the business network.
 
-It may be further convenient to access network using playground and test Credit- or DebitTransfer transactions. \textbf{data.json} should act as a helper to init the network by hand, but it is recommended to update the JavaScript function \textit{initBlockchain(transfer)} in \textit{./chain/lib/init.js}. That chain-code part is executed when transaction InitBlockchain is submitted. Be careful to run \textbf{InitBlockchain} only once otherwise errors or duplicate entries might happen resulting in a inconsistent chain.
+It may be further convenient to access network using playground and test Credit- or DebitTransfer transactions. \textbf{data.json} should act as a helper to init the network by hand, but it is recommended to update the JavaScript function \textit{initBlockchain(transfer)} in \textit{./chain/lib/init.js}. That chaincode part is executed when transaction InitBlockchain is submitted. Be careful to run \textbf{InitBlockchain} only once otherwise errors or duplicate entries might happen resulting in a inconsistent chain.
 
-\textbf{Network updates after chain-code changes}
+\textbf{Network updates after chaincode changes}
 
-After changes to the acl, cto, queries, the libraries or other parts of the core chain-code application the network needs to be updated. This can be achieved by executing
+After changes to the acl, cto, queries, the libraries or other parts of the core chaincode application the network needs to be updated. This can be achieved by executing
 
 \begin{lstlisting}[language=bash]
 	cd chain
@@ -396,7 +398,7 @@ The standard configuration opens a browser connecting to playground at localhost
 
 \textbf{The Admin Cards}
 
-Composer Playground helps by providing a basic web interface to interact with the hyperledger fabric block-chain, on which hyperledger composer is acting as an additional wrapper. Composer creates cards in order to connect to the block-chain. These cards can be created over the playground web interface or over the command line interface. For Interlace those cards are created by \textit{initNetwork.sh} explained in section \ref{sec:prototype}. When those scripts have been executed and no error messages occurred two cards should have been created and visible when opening hyperledger playground. This is illustrated in figure \ref{fig:admin-cards}.
+Composer Playground helps by providing a basic web interface to interact with the hyperledger fabric blockchain, on which hyperledger composer is acting as an additional wrapper. Composer creates cards in order to connect to the blockchain. These cards can be created over the playground web interface or over the command line interface. For INTERLACE those cards are created by \textit{initNetwork.sh} explained in section \ref{sec:prototype}. When those scripts have been executed and no error messages occurred two cards should have been created and visible when opening hyperledger playground. This is illustrated in Figure \ref{fig:admin-cards}.
 
 \begin{figure}[htbp]
   \centering
@@ -405,22 +407,22 @@ Composer Playground helps by providing a basic web interface to interact with th
   \label{fig:admin-cards}
 \end{figure}
 
-Those cards provide all information needed to connect to the Interlace block-chain business network. In particular there have been installed two cards:
+Those cards provide all information needed to connect to the INTERLACE blockchain business network. In particular there have been installed two cards:
 
 \begin{itemize}
 	\item Peer Admin Card (PeerAdmin@sardex-open-network)
 	\item Business Network Card (admin@sardex-open-network)
 \end{itemize}
 
-\textit{Peer Admin Cards} are cards (as the name suggests) used to interact with the peers. Users connecting over that card receive the permissions to manage chain-code deployments or changes on the peers. Thus it is a crucial part of every network.
+\textit{Peer Admin Cards} are cards (as the name suggests) used to interact with the peers. Users connecting over that card receive the permissions to manage chaincode deployments or changes on the peers. Thus it is a crucial part of every network.
 
 Access to Interlace/Sardex Business Network is granted to another user through the provision of a \textit{Business Network Card} which is called \textit{admin@sardex-open-network}.
 
-For Interlace we currently only have one user in place which is the admin user. However, if the network gets deployed it'll be necessary to grant acceess to other users which can be done by creating an additional Business Network Card for that particular user. Be aware that for that user a participant need to be registered first in order to link it with a new network card.
+For INTERLACE we currently only have one user in place which is the admin user. However, if the network gets deployed it'll be necessary to grant acceess to other users which can be done by creating an additional Business Network Card for that particular user. Be aware that for that user a participant need to be registered first in order to link it with a new network card.
 
 \textbf{Edit Network}
 
-Figure \ref{fig:edit-network} illustrates how a particular business network may be edited over playground directly. For Interlace this means that you can e.g. quickly try out some changes on the JavaScript files and see if the changes are deployable by pressing the "Deploy changes"-button. However, for most developers it might prefer the usage of a common IDE\footnote{\url{https://en.wikipedia.org/wiki/Integrated_development_environment}}, which offers far better assistance during development, and use the provided scripts \textit{initNetwork.sh} as well as \textit{updateNetwork.sh}.
+Figure \ref{fig:edit-network} illustrates how a particular business network may be edited over playground directly. For INTERLACE this means that you can e.g. quickly try out some changes on the JavaScript files and see if the changes are deployable by pressing the "Deploy changes"-button. However, for most developers it might prefer the usage of a common IDE\footnote{\url{https://en.wikipedia.org/wiki/Integrated_development_environment}}, which offers far better assistance during development, and use the provided scripts \textit{initNetwork.sh} as well as \textit{updateNetwork.sh}.
 
 \begin{figure}[htbp]
   \centering
@@ -431,13 +433,13 @@ Figure \ref{fig:edit-network} illustrates how a particular business network may 
 
 \textbf{Test Network}
 
-The Interlace bloc-chain might be also tested directly with playground web interface instead of using the composer cli tools or launching the provided additional web application. In figure \ref{fig:test-network} you can see the playground test environment that comes with playground and is started by pressing "Test" in the menu-bar.
+The INTERLACE bloc-chain might be also tested directly with playground web interface instead of using the composer cli tools or launching the provided additional web application. In Figure \ref{fig:test-network} you can see the playground test environment that comes with playground and is started by pressing "Test" in the menu-bar.
 
-On the left bar of that view you are provided with a list of the Interlace participants, assets as well as entry call "All Transactions". As the menu names might suggest when clicking on them you are receiving a list of those items which have been created on the chain. E.g. this view in \ref{fig:test-network} lists all \textit{Individuals} taking part in the Interlace-Test network. When looking into the main area of the screen-shot two "Individual"-participants have been registered. One member with ID "m1" and one with ID "m2".
+On the left bar of that view you are provided with a list of the INTERLACE participants, assets as well as entry call "All Transactions". As the menu names might suggest when clicking on them you are receiving a list of those items which have been created on the chain. E.g. this view in \ref{fig:test-network} lists all \textit{Individuals} taking part in the Interlace-Test network. When looking into the main area of the screen-shot two "Individual"-participants have been registered. One member with ID "m1" and one with ID "m2".
 
 In addition it is possible here to add and change entries for participants and assets you might change for your customized tests.
 
-Finally the "All Transactions" menu entry guides to a list of all transactions executed on the Interlace chain. This list contains of course not just the transactions somebody has been submitted but also entries like e.g. "AddParticipant" or "IssueIdentity", thus, all changes to the block-chain recorded can be found here.
+Finally the "All Transactions" menu entry guides to a list of all transactions executed on the INTERLACE chain. This list contains of course not just the transactions somebody has been submitted but also entries like e.g. "AddParticipant" or "IssueIdentity", thus, all changes to the blockchain recorded can be found here.
 
 \begin{figure}[htbp]
   \centering
@@ -448,7 +450,7 @@ Finally the "All Transactions" menu entry guides to a list of all transactions e
 
 \textbf{Submit a transaction}
 
-In figure \ref{fig:submit-credit-transfer} a submission dialogue is shown which raises when the "Submit Transaction"-button in screen-shot \ref{fig:test-network} is pressed. This dialogue gives the possibility to select one of all possible transactions executable on the Interlace network. In this dialogue a \textit{CreditTransfer} has been selected.
+In Figure \ref{fig:submit-credit-transfer} a submission dialogue is shown which raises when the "Submit Transaction"-button in screen-shot \ref{fig:test-network} is pressed. This dialogue gives the possibility to select one of all possible transactions executable on the INTERLACE network. In this dialogue a \textit{CreditTransfer} has been selected.
 
 In the black text-box the properties of that transactions can be provided over a JSON-String. The interface provides you with default values for the transaction specific ones.
 
@@ -459,9 +461,9 @@ In the black text-box the properties of that transactions can be provided over a
   \label{fig:submit-credit-transfer}
 \end{figure}
 
-When all the necessary properties have been provided pressing "Submit" tries to commit the transaction to the block-chain. In case of an error it is shown with red text attached to the same dialogue. When everything goes as planned the transaction is endorsed, ordered and committed to peers. The resulting actions will be visible with the assets/participants as well as in the transaction log of the chain.
+When all the necessary properties have been provided pressing "Submit" tries to commit the transaction to the blockchain. In case of an error it is shown with red text attached to the same dialogue. When everything goes as planned the transaction is endorsed, ordered and committed to peers. The resulting actions will be visible with the assets/participants as well as in the transaction log of the chain.
 
-Details on how to configure and initialize Interlace transactions are covered in the technical details section \ref{sec:technical-details}.
+Details on how to configure and initialize INTERLACE transactions are covered in the technical details section \ref{sec:technical-details}.
 
 \textbf{Run Transactions with composer-cli}
 
@@ -517,10 +519,10 @@ npm will start a web server at port 4200. If you work locally it also tries to o
 
 The web page is based on AngularJS and communicates over REST with our previously started REST server facilitating asynchronous AJAX-request.
 
-\section{The Chain-Code}
-\label{sec:chain-code}
+\section{The Chaincode}
+\label{sec:chaincode}
 
-The following part is describing the core business logic which is found in the \textit{chain} directory. The shell scripts ending with \textit{.sh} have been handled in section \ref{sec:prototype} except from \textit{startRestServer.sh} which is handled in the technical details \ref{sec:technical-details}. Given that this section focuses on the chain-code implementation which lays in the directory \textit{lib} illustrated in figure \ref{fig:chain-structure}.
+The following part is describing the core business logic which is found in the \textit{chain} directory. The shell scripts ending with \textit{.sh} have been handled in section \ref{sec:prototype} except from \textit{startRestServer.sh} which is handled in the technical details \ref{sec:technical-details}. Given that this section focuses on the chaincode implementation which lays in the directory \textit{lib} illustrated in Figure \ref{fig:chain-structure}.
 
 \begin{figure}[htbp]
 \centering
@@ -545,16 +547,16 @@ The following part is describing the core business logic which is found in the \
 	.2 \textcolor{green}{startRestServer.sh}.
 }
 \end{minipage}
-\caption{\bf\small Chain-Code Directory Structure}
+\caption{\bf\small Chaincode Directory Structure}
 \label{fig:chain-structure}
 \end{figure}
 
 
 Explaining the four JavaScript files the following can be said: \textit{config.js} contains the main configurations including things like time-outs, quick-transfer-amounts, transfer-type and account type mappings which is done in form of a JSON object.
 
-Unfortunately, composer doesn't offer static access to enumeration constants. All enumeration values of a type need to be address by a string value. That approach is quite dangerous and gives potentially space for a lot of common errors. Interlaces tries to solve this issue by setting up an object with "freezed"\footnote{\url{https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze}} attributes.
+Unfortunately, composer doesn't offer static access to enumeration constants. All enumeration values of a type need to be address by a string value. That approach is quite dangerous and gives potentially space for a lot of common errors. INTERLACE tries to solve this issue by setting up an object with "freezed"\footnote{\url{https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze}} attributes.
 
-In figure \ref{lst:enumMap} a JavaScript mapping of the cto-Model enum type \textit{Unit} in \ref{lst:enumCTO} is illustrated.
+In Figure \ref{lst:enumMap} a JavaScript mapping of the cto-Model enum type \textit{Unit} in \ref{lst:enumCTO} is illustrated.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -607,7 +609,7 @@ Then during execution the input parameter transfer may be used like any JavaScri
 
 \subsection{Init Blockchain}
 
-The only transaction in \textit{init.js} should be only executed once otherwise it will leave you with a inconsistent block-chain if executed at all. The reason is that this initialisation script is setting up couple of participants with an account asses each to immediately test the block-chain. Thus, after the "InitBlockchain" transaction has been executed the chain contains at least two members and two accounts in order to move money around by applying credit- and debit-operations.
+The only transaction in \textit{init.js} should be only executed once otherwise it will leave you with a inconsistent blockchain if executed at all. The reason is that this initialisation script is setting up couple of participants with an account asses each to immediately test the blockchain. Thus, after the "InitBlockchain" transaction has been executed the chain contains at least two members and two accounts in order to move money around by applying credit- and debit-operations.
 
 Listing \ref{lst:initBlock} shows parts of the actual creation of an asset as well as a participant. It uses \textit{getFactory()} which is part of the composer API to generate new instances of various types. The factory offers a function \textit{newResource} to actually create first an "Individual" from namespace \textit{net.sardex.interlace} and afterwards a "CCAccount" residing in the same namespace. The namespace is not visible in the script of \ref{lst:initBlock} because it has been configured in config.js file and applied to the config object.
 
@@ -620,7 +622,7 @@ Given that the Individual is a participant \textit{getParticipantRegistry} funct
 \begin{center}
 \begin{minipage}{0.8\textwidth}
 \small
-\begin{lstlisting}[language=javascript,firstnumber=1,caption={\bf\small chain-code adding a new resource in \textit{initBlockchain} function}, captionpos=b,label=lst:initBlock]
+\begin{lstlisting}[language=javascript,firstnumber=1,caption={\bf\small chaincode adding a new resource in \textit{initBlockchain} function}, captionpos=b,label=lst:initBlock]
 let factory = getFactory();
 
 let m1 = factory.newResource(config.NS, 'Individual', 'm1');
@@ -648,7 +650,7 @@ Once the registries are available they can be called like in line 14 and 17 with
 \label{subsec:main-payment-transactions}
 The current implementation comes with credit and debit transactions which are working according the specifications made in D3.1 and D3.1 besides one exception explained at the end of this subsection which is talking about moving money and asset \textit{DeltaDebt}.
 
-\textbf{CreditTransfer chain-code}
+\textbf{CreditTransfer chaincode}
 
 Let's now focus on the first of the two payment transactions - the credit transfers. In listing \ref{lst:js-credittransfer} the core of JavaScript function is shown without the additional function wrappers.
 
@@ -679,9 +681,9 @@ await moveMoney(transfer);
 \end{minipage}
 \end{center}
 
-The \textit{transfer}-object used in the listing is pre-filled by the chain-code API after a CreditTransfer has been invoked. It is created from the parameters and values of the JSON-object which is part of the submitted transaction and which is following the structure of the CTO-model from type \textit{net.sardex.interlace.CreditTransfer}.
+The \textit{transfer}-object used in the listing is pre-filled by the chaincode API after a CreditTransfer has been invoked. It is created from the parameters and values of the JSON-object which is part of the submitted transaction and which is following the structure of the CTO-model from type \textit{net.sardex.interlace.CreditTransfer}.
 
-\textbf{DebitTransfer chain-code}
+\textbf{DebitTransfer chaincode}
 
 The second function explained is the debit operation and is a bit more complex compared to a basic credit operation and shown in listing \ref{lst:js-debittransfer}. In that listing only the important part of the function is shown. The leading part calling \textit{checkAmountPlausible}, \textit{previewCheck} and \textit{accountLimitCheck} is exactly the same like in CreditTransfer and therefore left out to increase readability.
 
@@ -717,7 +719,7 @@ if (transfer.amount <= config.debit.quick_transfer_amount) {
 
 This is done by emitting an \textit{RequestDebitAcknowledge} event of namespace \textit{net.sardex.interlace} defined in the CTO-model which has a property \textit{otp} (One Time Pad) and a property \textit{debitorAccount} which is of type \textit{Account}. Such a DebitTransfer, which needs to be confirm, has to be stored for later. For that purpose a new asset has been created named PendingTransfer. So for every pending transfer a entry in PendingTransfer is going to be created. After than entry has been created by function \textit{insertPendingTransfer} it returns an OTP usable for the emitted event.
 
-\textbf{DebitTransferAcknowledge chain-code}
+\textbf{DebitTransferAcknowledge chaincode}
 
 Each entry in PendingTransfer is identified by an OTP in a way that a transfer can be unambiguously selected by providing an OTP. Currently the OTP is generated by hashing the transaction id of the debit transfer. However, if a debitor likes to confirm a transfer which he got informed by over the emitted event he just needs to pass the OTP as property for the \textit{DebitTransferAcknowledge} transaction.
 
@@ -764,7 +766,7 @@ Additionally in all cases \textit{updatePendingTransaction} has been applied als
 
 Actual movement of an amount from one to an other account is performed by basic addition/subtraction of the respective account and finally updating the account assets in the ledger by facilitating the registry offered by hyperledger composer API.
 
-Another important step, however, which is part of that money transfer and shown in listing \ref{lst:js-movemoney} is a additional functionality and has not been explained in the former requirements documents of the Interlace project. This logic collects all debts, thus, every transactions which are causing the balance to get negative or to increase an already negative balance. Those debts are collected because they are handled similar to a loan. They don't cause any additional fees, nevertheless, those debts are having a due date till when they need to be paid back. For details of debt collection you may be also referred to the appendix.
+Another important step, however, which is part of that money transfer and shown in listing \ref{lst:js-movemoney} is a additional functionality and has not been explained in the former requirements documents of the INTERLACE project. This logic collects all debts, thus, every transactions which are causing the balance to get negative or to increase an already negative balance. Those debts are collected because they are handled similar to a loan. They don't cause any additional fees, nevertheless, those debts are having a due date till when they need to be paid back. For details of debt collection you may be also referred to the appendix.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -822,7 +824,7 @@ await aR.updateAll(expiredPending);
 \end{minipage}
 \end{center}
 
-First the shown chain-code select all expired entries with query \textit{selectExpiredPendingTransfers}. Then it iterates all of them applying the new state. Finally, all entries are updated using the \textit{AssetRegistry}.
+First the shown chaincode select all expired entries with query \textit{selectExpiredPendingTransfers}. Then it iterates all of them applying the new state. Finally, all entries are updated using the \textit{AssetRegistry}.
 
 As this is an maintenance transaction is should be executed only by an admin or a user with a specific role.
 

@@ -157,32 +157,32 @@ For more details on how to configure the network to a greater depth, kindly cons
 
 In addition to the original fabric documentation a reference guide called "Hands-On Blockchain with Hyperledger" \cite{HandsOnBlockchainHyperledger2018} was used to build this network.
 
-\textbf{configtx.yaml}
+\textbf{configtx.yaml}]
 
-The second configuration-file named \textit{configtx.yaml} which is discussed next contains different but also some redundant configurations bits for the blockchain network. Another tool called \textit{configtxgen} picks up configtx.yaml and uses it to create configuration artefacts setting up a basic structure utilized by the actual blockchain network. This artefacts are:
+The second configuration file is named \textit{configtx.yaml} and contains different but also some redundant configuration bits for the blockchain network. Another tool called \textit{configtxgen} picks up configtx.yaml and uses it to create configuration artefacts, thereby setting up a basic structure utilized by the actual blockchain network. These artefacts are:
 
 \begin{itemize}
 	\item orderer \textit{genesis block}
 	\item channel \textit{configuration transaction}
-	\item an \textit{anchor peer transaction} for each peer-organisation
+	\item an \textit{anchor peer transaction} for each peer organisation
 \end{itemize}
 
-"The orderer block is the Genesis Block for the ordering service, and the channel configuration transaction file is
-broadcast to the orderer at Channel creation time. The anchor peer transactions, as the name might suggest, specify
-each Organisation's Anchor Peer on this channel." - stating the fabric documentation.
+As stated in the Fabric documentation,\footnote{\url{https://hyperledger-fabric.readthedocs.io/en/release-1.3/build_network.html}}
+\begin{quote}
+\small
+The orderer block is the Genesis Block for the ordering service, and the channel configuration transaction file is broadcast to the orderer at Channel creation time. The anchor peer transactions, as the name might suggest, specify each Organisation's Anchor Peer on this channel.
+\end{quote}
 
-The core configuration excerpt can be seen in Figure \ref{lst:configTxProfiles}.
+The core configuration excerpt can be seen in Listing \ref{lst:configTxProfiles}. First, it defines an orderer genesis block called \textit{InterlaceOrdererGenesis} containing one orderer handled by organization \textit{Interlace} together with some capabilities (not discussed here) as well as a consortium using the network.
 
-First, it is defining an orderer genesis block called \textit{InterlaceOrdererGenesis} containing one orderer handled by organization \textit{Interlace} together with some capabilities (not discussed here) as well as a consortium using the network.
+Second, it sets up a channel \textit{InterlaceChannel} which is connected to a consortium named \textit{InterlaceConsoritum}. This channel is used for credit and debit operations where currently only one organisation is defined: namely, \textit{Sardex}.
 
-Second, it sets up a channel \textit{InterlaceChannel} which is connected to a consortium named \textit{InterlaceConsoritum}. This channel is used for credit- and debit-operations where currently only one organization is defined, namely, \textit{Sardex}.
-
-Third, as mentioned initially, the anchor peers of the organizations are written in form of transactions. Anchor peers may be defined for an organization using the config-property \textit{AnchorPeers}. The project defines a host called \textit{"peer0.sardex.sardex.net"} providing service at port \textit{"7051"} consistent with the crypto-config.yaml file. The host information is written into that initial transaction.
+Third, as mentioned initially, the anchor peers of the organizations are written in the form of transactions. \textcolor{red}{I am not sure I understand what this means... Can you add a few more words of explanation?} Anchor peers may be defined for an organization using the config-property \textit{AnchorPeers}. The project defines a host called \textit{"peer0.sardex.sardex.net"} that provides services at port \textit{"7051"}, consistently with the crypto-config.yaml file. The host information is written into that initial transaction.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
 \small
-\begin{lstlisting}[language=yaml,firstnumber=1,caption={\bf\small configtx.yaml excerpt - Profiles definition}, captionpos=b,label=lst:configTxProfiles]
+\begin{lstlisting}[language=yaml,firstnumber=1,caption={\bf\small configtx.yaml excerpt -- Profiles definition}, captionpos=b,label=lst:configTxProfiles]
 Profiles:
     InterlaceOrdererGenesis:
         Capabilities:
@@ -213,7 +213,7 @@ Profiles:
 
 Docker and Docker Compose are the core technologies used to start containerized services which finally start the actual blockchain and its components. Hyperledger fabric developer offer images which are ready to be started right away when provided with the correct configuration locations.
 
-The compose file is defining four container images. In Figure \ref{lst:composeImages} a shortened compose yaml-file shows the services (or images) started when \textit{docker-compose up} is called. One for the certification authority (line 2), one for the orderer (line 4), one for the peer (line 6) and also an additional container (line 8) the peer is storing data to. That additional container is a NoSQL database called CouchDB. 
+The compose file defines four container images. In Listing \ref{lst:composeImages} a shortened compose yaml-file shows the services (or images) started when \textit{docker-compose up} is called. One for the certification authority (line 2), one for the orderer (line 4), one for the peer (line 6), and also an additional container (line 8) the peer is storing data to. That additional container is a NoSQL database called CouchDB. 
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -232,25 +232,23 @@ services:
 \end{minipage}
 \end{center}
 
-Also docker-composer is creating a virtual network environment where the service containers defined in that definition are reachable among themselves using the particular domain names used in that configuration.
+Also docker-composer creates a virtual network environment where the service containers defined here can communicate between themselves using the particular domain names used in this configuration file.
 
-Each of the services starts their respective application which is handling the allotted requests. The certification authority (CA) is started by calling \textit{fabric-ca-server}, the orderer is executing the same-named command \textit{orderer}, the only peer (peer0) runs \textit{peer node start} and the CouchDB image "couchdb" is started without specifying an additional command because the start-up process is handled by the container image itself.   
+Each of the services starts its respective application, which handles the allotted requests. The certification authority (CA) is started by calling \textit{fabric-ca-server}, the orderer executes the eponymous command \textit{orderer}, the only peer (peer0) runs \textit{peer node start}, and the CouchDB image "couchdb" is started without specifying an additional command because the start-up process is handled by the container image itself.   
 
-The CA might be replaced for a real-world productive solution by a different authority supporting ECDSA certificates. Fabric only supplies this implementation to get a network quickly up and running.
+The CA might be replaced for a real-world production system by a different authority supporting ECDSA certificates. Fabric only supplies this implementation to get a network quickly up and running.
 
 \textbf{Cryptographic Material}
 
-Except from couchdb all other services need to be configured with the network structure as well as the appropriate public private key infrastructure. In the \textit{chain} directory another folded called \textit{network} can be found. This folder contains templates of configtx.ymal as well as crypto-config.yaml. 
+Except for CouchDB, all other services need to be configured with the network structure as well as the appropriate public-private key infrastructure. In the \textit{chain} directory another folder called \textit{network} can be found. This folder contains templates of configtx.ymal as well as crypto-config.yaml. 
 
-Those template are, as mentioned, for generating the genesis-block as well as the keys needed for the respective service. The generation has been scripted and can be done by calling \textit{build.sh} which is also located in the same directory like the yaml-files. The results of running the build script are
-
+These template are, as mentioned, for generating the genesis block as well as the keys needed for the corresponing service. We have scripted the generation: it can be performed by calling \textit{build.sh}, which is also located in the same directory as the yaml-files. The results of running the build script are
 \begin{itemize}
 	\item interlace-channel.tx
 	\item interlace-genesis.block
 	\item crypto-config\ directory
 \end{itemize}
-
-These generated files as well as the directory are finally shared using docker volumes \footnote{\url{https://docs.docker.com/storage/volumes/}} for the respective services. A detailed description on how to configure the services can be found at the online documentation of fabric\footnote{\url{https://hyperledger-fabric.readthedocs.io}} but also at \cite{HandsOnBlockchainHyperledger2018}.
+These generated files as well as the directory are finally shared using docker volumes\footnote{\url{https://docs.docker.com/storage/volumes/}} for the respective services. A detailed description of how to configure the services can be found in the online documentation of fabric\footnote{\url{https://hyperledger-fabric.readthedocs.io}} but also in \cite{HandsOnBlockchainHyperledger2018}.
 
 %\subsection{cto-model}
 %\label{sec:cto-model}
@@ -279,25 +277,25 @@ These generated files as well as the directory are finally shared using docker v
 \section{Prototype}
 \label{sec:prototype}
 
-The prototype is a blockchain realisation of INTERLACE, can be found on GitHub\footnote{\url{https://github.com/InterlaceProject/InterlaceBlockchain}} and is based on the specifications created in deliverable D3.1\cite{INTERLACE_D31} as well as the ASIM Specification of the requirements.
+The prototype is a blockchain realisation of INTERLACE, can be found on GitHub\footnote{\url{https://github.com/InterlaceProject/InterlaceBlockchain}} and is based on the specifications created in deliverable D3.1 \cite{INTERLACE_D31} along with the ASIM specification of the requirements.
 
-First it is necessary to install the pre-requisites which are available for Linux and Mac OS. Currently these are the recommended operating systems, however, with additional effort it might be possible to run the INTERLACE blockchain on Windows directly. To support windows user a virtual machine set-up is also available.
+First, it is necessary to install the prerequisites which are available for Linux and Mac OS. Currently these are the recommended operating systems. However, with additional effort it might be possible to run the INTERLACE blockchain on Windows directly. To support Windows users a virtual machine set-up is also available.
 
-Additionally, it is also important to set-up a development environment described at the composer GitHub repository. If development is not planned and setting up a complete environment not necessary, it would be still recommended to install and start Composer Playground. Playground enables someone to connect, alter and test the INTERLACE payment network. Nevertheless, playground is not required and might it might be possible to use composer-cli or other methods to utilized the network.
+Additionally, it is also important to set up a development environment described in the Composer GitHub repository. Even if development is not planned and setting up a complete environment not necessary, it is still advisable to install and start Composer Playground. Playground enables someone to connect, alter, and test the INTERLACE payment network. Nevertheless, playground is not required and it might be possible to use composer-cli or other methods to utilise the network.
 
 \subsection{Install}
 
-This part of the documents talks about how to set-up and run the business network on your machine. However, before it is actually possible to begin it is necessary to install the pre-requisites which are listed at the hyperledger composer documentation\footnote{\url{https://hyperledger.github.io/composer/latest/installing/installing-prereqs.html}}. The website also offers a download where a script for installing all the requirements for a machine is provided.
+This part of the documents talks about how to set up and run the business network on your machine. However, before it is actually possible to begin it is necessary to install the pre-requisites which are listed at the hyperledger composer documentation.\footnote{\url{https://hyperledger.github.io/composer/latest/installing/installing-prereqs.html}} The website also offers a download where a script for installing all the requirements for a machine is provided.
 
-Nevertheless, for windows user those script won't help because for now most of the packages are not yet prepared (as of writing) for a windows operating systems. For this user group a virtual machine has been prepared which is also installing all the necessary frameworks and software tools during provisioning. This virtual machine is controlled by vagrant\footnote{\url{https://www.vagrantup.com/}} and uses hyper-v or virtual box as hypervisor (two different branches). That VM configuration is published at GitHub\footnote{\url{https://github.com/hirsche/hyperledger}}.
+Nevertheless, for Windows users these scripts won't help because for now most of the packages are not yet prepared (as of this writing) for a Windows operating systems. We have prepared a virtual machine also for this user group, which also installs all the necessary frameworks and software tools during provisioning. This virtual machine is controlled by vagrant\footnote{\url{https://www.vagrantup.com/}} and uses hyper-v or virtual box as hypervisor (two different branches). This VM configuration is published at GitHub\footnote{\url{https://github.com/hirsche/hyperledger}}.
 
 \textbf{Environment Start-Up}
 
-Once the hyperledger environment is installed, the next step is about starting the INTERLACE environment. To make communication uniform the blockchain is configured to publish all services under the host name "interlace.chain". Windows user facilitating the suggested vagrant set-up the new hostname is added to your host-file during start-up time using the vagrant-hostmanager plug-in. Thus there is no need to configure the name manually.
+Once the hyperledger environment is installed, the next step is to start the INTERLACE environment. To make communications uniform the blockchain is configured to publish all services under the host name "interlace.chain". To facilitate Windows users, in the suggested vagrant set-up the new hostname is added to your host-file at start-up time using the vagrant-hostmanager plug-in. Thus there is no need to configure the name manually.
 
 \textbf{Configure Hostnames}
 
-For non-vagrant users it is important before executing for the local set-up to add a host name entry for "interlace.chain". Usually this entry will point to ip 127.0.0.1 (localhost). On a production system or if it was chosen to start the hyperledger composer services on a public interface, the IP needs to be fixed accordingly. Here is a list of hosts-file locations according to different operating systems types:
+For non-vagrant users it is important before executing the local set-up to add a host name entry for "interlace.chain". Usually this entry will point to IP 127.0.0.1 (localhost). On a production system or if it was chosen to start the hyperledger composer services on a public interface, the IP needs to be fixed accordingly. Here is a list of host file locations according to different operating systems types:
 
 \begin{itemize}
 	\item Mac OS: /private/etc/hosts
@@ -305,29 +303,32 @@ For non-vagrant users it is important before executing for the local set-up to a
     \item Windows: C:\textbackslash Windows\textbackslash System32\textbackslash drivers\textbackslash etc\textbackslash hosts
 \end{itemize}
 
-The format may vary a little but usually a new host with its hostname is defined using it's IP and the desired host name like
+The format may vary a little but usually a new host with its hostname is defined using its IP and the desired host name as
 
 \begin{lstlisting}
 	127.0.0.1        interlace.chain
 \end{lstlisting}
+Depending on the operating system, it might be also necessary to update and restart the corresponding services (e.g. MacOS).
 
-Depending on the operating system it might be also necessary to update and restart the respective services (e.g. MacOS).
+\textbf{Run fabric blockchain (the first time)}
 
-\textbf{Run fabric block chain (the first time)}
-
-Now the main configurations have been done and hyperledger fabric can be started, which acts as a base for hyperledger composer. To continue the GitHub repository \footnote{\url{https://github.com/InterlaceProject/InterlaceBlockchain}} if not yet done needs to be downloaded by using the git visioning system by calling
+At this stage, the main configurations have been performed and hyperledger fabric can be started, which acts as a base for hyperledger composer. To continue, if not yet done the GitHub repository\footnote{\url{https://github.com/InterlaceProject/InterlaceBlockchain}} needs to be downloaded by using the git visioning system by calling:
 
 \begin{lstlisting}[language=bash]
 	git clone https://github.com/InterlaceProject/InterlaceBlockchain.git
 \end{lstlisting}
 
-In the created directory "InterlaceBlockchain" the business network implementation including a web application can be found. The next listing shows the bash script which downloads several fabric docker container and finally starts them using docker-composer \footnote{\url{https://docs.docker.com/compose/}}:
+In the directory "InterlaceBlockchain" that is created the business network implementation, including a web application, can be found. The next listing shows the bash script that downloads several fabric docker containers and finally starts them using docker-composer:\footnote{\url{https://docs.docker.com/compose/}}
 
 \begin{lstlisting}[language=bash]
 	cd fabric
 	./downloadFabric.sh # updates images - only the first time necessary
 	./startFabric.sh # start up docker environment using docker-compose
 \end{lstlisting}
+
+
+\textcolor{red}{Paolo: to here (2018-11-20)}
+
 
 \textbf{Initialize Interlace-Chain}
 

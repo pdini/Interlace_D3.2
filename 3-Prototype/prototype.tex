@@ -649,13 +649,13 @@ Once the registries are available, they can be called as in lines 14 and 17 with
 
 \subsection{Main Payment Transactions}
 \label{subsec:main-payment-transactions}
-The current implementation comes with credit and debit transactions that work according to the specifications made in D2.1 and D3.1, except for the requirement concerning the tracking of the debt position over time, \textit{DeltaDebt}, which can be found in D2.3.
+The current implementation comes with credit and debit transactions that work according to the specifications made in D2.1 \cite{INTERLACE_D21} and D3.1 \cite{INTERLACE_D31}, except for the requirement concerning the tracking of the debt position over time, \textit{DeltaDebt}, which can be found in D2.3 \cite{INTERLACE_D23}.
 
 \textbf{CreditTransfer chaincode}
 
-Let's now focus on the first of the two payment transactions - the credit transfers. In listing \ref{lst:js-credittransfer} the core of JavaScript function is shown without the additional function wrappers.
+Let's now focus on the first of the two payment transactions: the credit transfer. Listing \ref{lst:js-credittransfer} shows the core of the JavaScript function without the additional function wrappers.
 
-Code has been written in a way that is supposed to be readable by people which may not be JavaScript experts. Nevertheless, to give a quick explanation, the keyword \textit{await}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await}} which deals with asynchronous JavaScript function calls and (in simplified terms) just waits till the prefixed function completes its task. If \textit{await} would be missing an asynchronous JavaScript (like previewCheck) would be called and executed in the background and the execution of the current thread would continue immediately.
+The code was written in a way that is supposed to be readable by people who may not be JavaScript experts. Nevertheless, the keyword \textit{await} might  need a brief explanation:\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await}} \textit{await} deals with asynchronous JavaScript function calls and (in simplified terms) just waits until the prefixed function completes its task. If \textit{await} were missing, an asynchronous JavaScript (like previewCheck) would be called and executed in the background and the execution of the current thread would continue immediately.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -682,15 +682,17 @@ await moveMoney(transfer);
 \end{minipage}
 \end{center}
 
-The \textit{transfer}-object used in the listing is pre-filled by the chaincode API after a CreditTransfer has been invoked. It is created from the parameters and values of the JSON-object which is part of the submitted transaction and which is following the structure of the CTO-model from type \textit{net.sardex.interlace.CreditTransfer}.
+The \textit{transfer} object used in the listing is pre-filled by the chaincode API after a CreditTransfer is invoked. It is created from the parameters and values of the JSON object that is part of the submitted transaction and that follows the structure of the CTO model of type \textit{net.sardex.interlace.CreditTransfer}.
 
 \textbf{DebitTransfer chaincode}
 
-The second function explained is the debit operation and is a bit more complex compared to a basic credit operation and shown in listing \ref{lst:js-debittransfer}. In that listing only the important part of the function is shown. The leading part calling \textit{checkAmountPlausible}, \textit{previewCheck} and \textit{accountLimitCheck} is exactly the same like in CreditTransfer and therefore left out to increase readability.
+The debit operation, shown in Listing \ref{lst:js-debittransfer}, is a bit more complex compared to a basic credit operation. In that listing only the important part of the function is shown. The leading part calling \textit{checkAmountPlausible}, \textit{previewCheck}, and \textit{accountLimitCheck} is exactly the same as in CreditTransfer and, therefore, it was left out to increase readability.
 
-One note for debit operations resulting from the specifications is, that the owner of the senderAccount from the debit transfer is the debitor which is also the buyer. Whereas the recipientAccount owner is regarded as the creditor which is selling something.
+One note for debit operations resulting from the specifications is that the owner of the fromAccount from the debit transfer is the debitor, who is also the buyer. Whereas the toAccount owner is regarded as the creditor who is selling something. Please see Figure 2.7 in D3.1 \cite{INTERLACE_D31} for the definition of fromAccount, toAccount, and related concepts.
 
-Continuing further with the implementation, the core of the debit operation checks if an immediate transfer is possible (amount smaller than a predefined value) or if a confirmation of the other party is necessary. In case of an immediate transfer the money is moved the same way like in CreditTransfer by calling the \textit{moveMoney} function. If the transfer amount is too big a confirmation needs to be acquired from the debitor which is in our case the owner of the senderAccount of the transfer.
+Continuing further with the implementation, the core of the debit operation checks if an immediate transfer is possible (amount smaller than a predefined value) or if a confirmation of the other party is necessary. In case of an immediate transfer the money is moved the same way as in CreditTransfer by calling the \textit{moveMoney} function. If the transfer amount is above a threshold (currently 100 SRD), however, a confirmation needs to be obtained from the debitor who is in our case the owner of the fromAccount of the transfer.
+
+\textcolor{red}{please fix  senderAccount -->  fromAccount in the listing below!}
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -718,17 +720,17 @@ if (transfer.amount <= config.debit.quick_transfer_amount) {
 \end{minipage}
 \end{center}
 
-This is done by emitting an \textit{RequestDebitAcknowledge} event of namespace \textit{net.sardex.interlace} defined in the CTO-model which has a property \textit{otp} (One Time Pad) and a property \textit{debitorAccount} which is of type \textit{Account}. Such a DebitTransfer, which needs to be confirm, has to be stored for later. For that purpose a new asset has been created named PendingTransfer. So for every pending transfer a entry in PendingTransfer is going to be created. After than entry has been created by function \textit{insertPendingTransfer} it returns an OTP usable for the emitted event.
+This is done by issuing a \textit{RequestDebitAcknowledge} event of namespace \textit{net.sardex.interlace} defined in the CTO model. This event has an \textit{otp} property, and a \textit{debitorAccount} \textcolor{red}{<-- Should this be fromAccount?} property which is of type \textit{Account}. Such a DebitTransfer, which needs to be confirmed, has to be stored for later. For that purpose a new asset has been created named PendingTransfer. So for every pending transfer an entry in PendingTransfer is going to be created. After this entry has been created by function \textit{insertPendingTransfer} it \textcolor{red}{what is this "it" referring to? Better use the noun rather than the pronoun} returns an OTP usable for the emitted event.
 
 \textbf{DebitTransferAcknowledge chaincode}
 
-Each entry in PendingTransfer is identified by an OTP in a way that a transfer can be unambiguously selected by providing an OTP. Currently the OTP is generated by hashing the transaction id of the debit transfer. However, if a debitor likes to confirm a transfer which he got informed by over the emitted event he just needs to pass the OTP as property for the \textit{DebitTransferAcknowledge} transaction.
+Each entry in PendingTransfer is identified by an OTP in a way that a transfer can be unambiguously selected by providing an OTP. Currently the OTP is generated by hashing the transaction id of the debit transfer. However, if a debitor would like to confirm a transfer of which he was informed by the emitted event, he just needs to pass the OTP as property for the \textit{DebitTransferAcknowledge} transaction.
 
-\textbf{Note:} For productive Systems that identification might include an additional key as for a large numbers of PendingTransfers the OTP generated in that way might not be unique any more.
+\textbf{Note:} For production systems this identification might include an additional key since for large numbers of PendingTransfers the OTP generated in this way might not be unique anymore.
 
-In listing \ref{lst:js-ack} the main part of \textit{DebitTransferAcknowledge}, which is different from the other transactions, is depicted. The variable \textit{ack} in the script is transaction object provided to the function, which contains the \textit{PendingTransfer} read into variable \textit{pT}. Then it is checked whether it is still in state pending, in case it is continued. In any other case an error is throws an the transaction is discarded (!not! recorded into the ledger).
+Listing \ref{lst:js-ack} shows the main part of \textit{DebitTransferAcknowledge}, which is different from the other transactions. The variable \textit{ack} in the script is a transaction object provided to the function which contains the \textit{PendingTransfer} read into variable \textit{pT}. Then the code checks whether it is still in the pending state, in case it is continued \textcolor{red}{Sorry. not clear what you mean by "in case it is continued"}. In any other case an error is thrown and the transaction is discarded (!not! recorded into the ledger).
 
-If the process is continued the timestamp of the transaction is checked against the \textit{expires} date property of the pending transfer. Consequently, if expired, the state is updated to \textit{"Expired"} and function \textit{DebitTransferAcknowledge} returns with a respective status (\textit{AcknowledgeStatus}).
+If the process is continued the timestamp of the transaction is checked against the \textit{expires} date property of the pending transfer. Consequently, if expired, the state is updated to \textit{"Expired"} and function \textit{DebitTransferAcknowledge} returns with the corresponding status \textit{AcknowledgeStatus}.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -759,15 +761,15 @@ if (ack.timestamp >= pT.expires) {
 \end{minipage}
 \end{center}
 
-The later parts of the function after all of the checks have been passed and the debit transaction can be performed the execution steps are pretty much the same like in a CreditTransfer. The only difference is that in case of success or error the PendingTransfer asset of the transaction need to be update to Performed or Rejected respectively. A function called \textit{updatePendingTransaction} also used in line 14 of listing \ref{lst:js-ack} takes care of putting the asset PendingTransfer into the right state.
+In the later parts of the function, after all of the checks have been passed and the debit transaction can be performed, the execution steps are pretty much the same as in a CreditTransfer. The only difference is that in case of success or error the PendingTransfer asset of the transaction needs to be updated to Performed or Rejected, respectively. A function called \textit{updatePendingTransaction}, also used in line 14 of Listing \ref{lst:js-ack}, takes care of putting the asset PendingTransfer into the right state.
 
-Additionally in all cases \textit{updatePendingTransaction} has been applied also a status object called \textit{AcknowledgeStatus} is created and return by the function which contains the resulting status but also an error message in case something went wrong.
+Additionally, in all cases in which \textit{updatePendingTransaction} has been applied, also a status object called \textit{AcknowledgeStatus} is created and returned by the function that contains the resulting status, along with an error message if something went wrong.
 
 \textbf{moveMoney \& DeltaDebt}
 
-Actual movement of an amount from one to an other account is performed by basic addition/subtraction of the respective account and finally updating the account assets in the ledger by facilitating the registry offered by Hyperledger Composer API.
+Actual movement of an amount from one to an other account is performed by basic addition and subtraction applied to the balances of the respective accounts and, finally, by updating the account assets in the ledger by means of the registry provided by the Hyperledger Composer API.
 
-Another important step, however, which is part of that money transfer and shown in listing \ref{lst:js-movemoney} is a additional functionality and has not been explained in the former requirements documents of the INTERLACE project. This logic collects all debts, thus, every transactions which are causing the balance to get negative or to increase an already negative balance. Those debts are collected because they are handled similar to a loan. They don't cause any additional fees, nevertheless, those debts are having a due date till when they need to be paid back. For details of debt collection you may be also referred to the appendix.
+Another important step, however, which is part of this money transfer and is shown in Listing \ref{lst:js-movemoney}, is an additional functionality which was specified in D2.3 \cite{INTERLACE_D23}. This logic collects all debts, thus, every transactions which are causing the balance to go negative or to increase (in absolute value) an already negative balance. These debts are collected because they are handled similarly to a loan. ALthough they don't incur interest or any additional fees, these debts have a due date of 12 months by when they need to be paid back. See the Appendix of \cite{INTERLACE_D23} for more details.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -787,9 +789,9 @@ if ((transfer.recipientAccount.balance - transfer.amount) < 0) {
 \end{minipage}
 \end{center}
 
-The creation of a debt handled by \textit{createDeltaDebt} is straight forward and just adds an entry to asset \textit{DeltaDebt} if a transaction has been detected which causes a negative balance or increases an already negative balance. A new \textit{DeltaDebt} entry receives an original amount, a current amount, an owner id and of course a due date when it needs to be paid back.
+The creation of a debt handled by \textit{createDeltaDebt} is straightforward and just adds an entry to asset \textit{DeltaDebt} if a transaction has been detected which causes a negative balance or makes an already negative balance more negative. A new \textit{DeltaDebt} entry receives an original amount, a current amount, an owner id, and of course a due date by when it needs to be paid back.
 
-If soever a transaction is adding money to the account owners balance former \textit{DeltaDebt} entries may be cleared which is done by querying all debts with an non-paid amount. This is illustrated in listing \ref{lst:js-cleardebt} where a rich query called \textit{selectDeltaDebt} is used to get all of those unpaid debts. Details that and other queries are discussed in subsection \ref{subsec:queries}.
+If however a transaction adds money to the account owner's balance, say with a positive amount "Amount", former \textit{DeltaDebt} entries may be cleared, which is done by querying all debts with a still unpaid amount. This is illustrated in Listing \ref{lst:js-cleardebt}, where a rich query called \textit{selectDeltaDebt} is used to account for all of those unpaid debts. Details of this and other queries are discussed in subsection \ref{subsec:queries}.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -802,13 +804,13 @@ let openDelta =
 \end{minipage}
 \end{center}
 
-All selected debts are iterated starting by the oldest first. The available portion of the amount gets subtracted from the current \textit{DeltaDebt} asset. If the amount is bigger than the debt the rest of the amount ($amount = amount - deptPos$) is used in the next iteration step to clear the nearest (in terms of age) entry of delta debt. Thus this loop continues either till there is no amount left or all debts have been paid back which also means in the latter case that the balance goes back having a positive value.
+All selected debts are iterated, starting with the oldest first. The available portion of Amount gets subtracted from the current \textit{DeltaDebt} asset. If Amount is bigger than the current debt being examined, the rest of Amount ($amount = amount - deptPos$) is used in the next iteration step towards the clearing of the next-oldest entry of \textit{DeltaDebt}. Thus, this loop continues either until Amount has been all used up or all debts have been paid back, which also means in the latter case that the balance goes back to having a zero or positive value.
 
 \subsection{Additional Transactions}
 
-There is an additional transaction important for maintenance issues. This transaction called \textit{CleanupPendingTransfer} is illustrated in listing \ref{lst:js-cleanupPending} and taking care of handling old entries of asset \textit{PendingTransfer}.
+There is an additional transaction important for maintenance issues. This transaction, called \textit{CleanupPendingTransfer}, is illustrated in Listing \ref{lst:js-cleanupPending} and takes care of handling old entries of asset \textit{PendingTransfer}.
 
-In some cases pending transfers stay unconfirmed for ever because they e.g. have been issued wrongly by a user or where duplicates in case a connection had been interrupted together with a lost emitted acknowledge-request-event. In this cases because of legal and security reasons those transfers have to be set to \textit{Expired}.
+In some cases pending transfers stay unconfirmed for ever because they e.g.\ were issued wrongly by a user, or were duplicates if a connection had been interrupted together with a lost emitted acknowledge-request event. In such cases, for legal and security reasons these transfers have to be set to \textit{Expired}.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -825,9 +827,9 @@ await aR.updateAll(expiredPending);
 \end{minipage}
 \end{center}
 
-First the shown chaincode select all expired entries with query \textit{selectExpiredPendingTransfers}. Then it iterates all of them applying the new state. Finally, all entries are updated using the \textit{AssetRegistry}.
+First, the chaincode shown selects all expired entries with query \textit{selectExpiredPendingTransfers}. Then it iterates all of them applying the new state. Finally, all entries are updated using the \textit{AssetRegistry}.
 
-As this is an maintenance transaction is should be executed only by an admin or a user with a specific role.
+As this is a maintenance transaction it should be executed only by an admin or a user with a specific maintenance role.
 
 \subsection{Queries}
 \label{subsec:queries}

@@ -286,7 +286,7 @@ First, it is necessary to install the prerequisites which are available for Linu
 Additionally, it is also important to set up a development environment described in the Composer GitHub repository. Even if development is not planned and setting up a complete environment not necessary, it is still advisable to install and start Composer Playground. Playground enables someone to connect, alter, and test the INTERLACE payment network. Nevertheless, Playground is not required and it might be possible to use composer-cli or other methods to utilise the network.
 
 \subsection{Install}
-
+\label{subsec:install}
 This part of the documents talks about how to set up and run the business network on your machine. However, before it is actually possible to begin it is necessary to install the pre-requisites which are listed at the Hyperledger Composer documentation.\footnote{\url{https://hyperledger.github.io/composer/latest/installing/installing-prereqs.html}} The website also offers a download where a script for installing all the requirements for a machine is provided.
 
 Nevertheless, for Windows users these scripts won't help because for now most of the packages are not yet prepared (as of this writing) for a Windows operating systems. We have prepared a virtual machine also for this user group, which also installs all the necessary frameworks and software tools during provisioning. This virtual machine is controlled by vagrant\footnote{\url{https://www.vagrantup.com/}} and uses hyper-v or virtual box as hypervisor (two different branches). This VM configuration is published at GitHub\footnote{\url{https://github.com/hirsche/hyperledger}}.
@@ -466,7 +466,7 @@ In the black text-box the properties of that transactions can be provided as a J
 
 Once all the necessary properties have been provided, pressing "Submit" tries to commit the transaction to the blockchain. If an error is encountered, it is shown in red font attached to the same dialog. When everything goes as planned the transaction is endorsed, ordered, and committed to the peers. The execution results will finally show up in the JSON records used for the assets and participants as well as in the transaction log of the chain.
 
-Details on how to configure and initialize INTERLACE transactions are covered in Section \ref{sec:technical-details} which discusses the technical details.
+Details on how to configure and initialize INTERLACE transactions are covered in Section \ref{subsec:initblockchain} which discusses the technical details.
 
 \textbf{Run Transactions with composer-cli}
 
@@ -525,7 +525,7 @@ The webpage is based on AngularJS and communicates over REST with our previously
 \section{The Chaincode}
 \label{sec:chaincode}
 
-This section describes the core business logic, which is found in the \textit{chain} directory. The shell scripts ending with \textit{.sh} were discussed in Section \ref{sec:prototype}, except for \textit{startRestServer.sh} which is handled in the technical details Section \ref{sec:technical-details}. This section focuses on the chaincode implementation which is stored in the directory \textit{lib} illustrated in Figure \ref{fig:chain-structure}.
+This section describes the core business logic, which is found in the \textit{chain} directory. The shell scripts ending with \textit{.sh} were discussed in Section \ref{sec:prototype}, except for \textit{startRestServer.sh} which is handled in the technical details Section \ref{sec:rest-server}. This section focuses on the chaincode implementation which is stored in the directory \textit{lib} illustrated in Figure \ref{fig:chain-structure}.
 
 \begin{figure}[htbp]
 \centering
@@ -609,6 +609,7 @@ In this example the JavaScript name of the function is not important. Rather, wh
 Then, during execution the \textit{transfer} input parameter may be used like any JavaScript object and contains all the information necessary to process that transaction request. In JS, it is important that the code be deterministic and that it evaluates to the same result on different peers.
 
 \subsection{Init Blockchain}
+\label{subsec:initblockchain}
 
 The only transaction in \textit{init.js} should be executed only once, otherwise it will lead to an inconsistent blockchain if executed twice. The reason is that this initialisation script sets up a couple of participants with an account asset each to immediately test the blockchain. Thus, after the "InitBlockchain" transaction has been executed the chain contains at least two members and two accounts in order to move money around by applying credit and debit operations. Therefore, executing the initialisation multiple times will create a pair of participants each time, leading to a configuration that does not match other parts of the model.
 
@@ -867,19 +868,86 @@ In query \textit{selectDeltaDebt} all open debts for particular debitor (which i
 
 \subsection{Access Control Language File}
 
-\todo{}
+The INTERLACE prototype currently only has one user which is the admin and user of the whole network - for no other users certificates have been issued.  This can be easily changed by adopting the acl-file of the implementation and binding certificates to participants.  However, to reduce complexity especially for people who work first with the demo implementation the set-up has been kept simple in this regards.
+
+In listing \ref{lst:acl-permissions} you may find the INTERLACE Access Control Language file, permissons.acl, which grants access to any user with any operation available.  
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=json,firstnumber=1,caption={\bf\small access  control configuration for INTERLACE}, captionpos=b,label=lst:acl-permissions]
+rule Default {
+    description: "Allow all participants access to all resources"
+    participant: "ANY"
+    operation: ALL
+    resource: "net.sardex.interlace.*"
+    action: ALLOW
+}
+
+rule SystemACL {
+  description:  "System ACL to permit all access"
+  participant: "ANY"
+  operation: ALL
+  resource: "org.hyperledger.composer.system.**"
+  action: ALLOW
+}
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+Details on how to refine access can be found at the Hyperledger Composer documentation\footnote{\url{https://hyperledger.github.io/composer/v0.19/tutorials/acl-trading}}.
 
 \subsection{Deployment}
 
-\todo{}
+The deployment of the chaincode application has to happen in several steps which are, as mentioned in section \ref{subsec:install}, handled by \textit{initNetwork.sh} or after consecutive changes with \textit{updateNetwork.sh} . Both scripts utilize the hyperledger composer-cli component.
 
+The script \textit{initNetwork.sh} needs to
+
+\begin{enumerate}
+	\item create package.json if not existing
+	\item packing all sources into a bna-file,
+	\item create a network card for the \textit{ChannelAdmin} as well as the \textit{PeerAdmin} roles,
+	\item import that card,
+	\item install the new network,
+	\item start the new network,
+	\item and finally import the network admin card generated by the starting process.
+\end{enumerate}
+
+Basically, the script will provide a running business network together with composer cards which are connection profiles used to access the network.
+
+During development the network needs to be deployed a couple of times to check and test the implementations. For that purpose \textit{updateNetwork.sh} has been created. It reduces these 7 steps necessary for initial install to just 4 handling an intermediate update. These steps are
+
+\begin{enumerate}
+	\item increasing the version of the business network implementation,
+	\item re-packing the changes sources into a bna-file having a higher version tag,
+	\item installing the new bna-file on the network,
+	\item and at last upgrading the network to the new version.
+\end{enumerate}
+
+\section{Rest Server}
+\label{sec:rest-server}
+
+A REST server used for connections of client applications can be provided by the Hyperledger Composer Rest Server CLI-Tool\footnote{\url{https://hyperledger.github.io/composer/latest/reference/rest-server}}. The REST server is able to connect to the business network and provides access to all assets, transactions and queries available on the network.
+
+For INTERLACE all the configurations necessary to run that server are gathered inside \textit{startRestServer.sh}. The exposed REST API is shown in figure \ref{fig:rest-swagger} and is build with Swagger tools\footnote{\url{https://swagger.io/}}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.7\textwidth]{Figures/rest-swagger}
+  \caption{\bf\small REST GUI provided by composer-rest-server using Swagger}
+  \label{fig:rest-swagger}
+\end{figure}
 
 \section{Web Application}
 \label{sec:webapp}
 
-\todo {describe}
+In figure \label{fig:webapp} an illustration of a web page generated for the INTERLACE business network implementation is shown. It has been created using generator-hyperledger-composer\footnote{\url{https://www.npmjs.com/package/generator-hyperledger-composer}} which is a yeoman\footnote{\url{http://yeoman.io/}} module.
 
-\section{Further Technical Details}
-\label{sec:technical-details}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{Figures/webapp}
+  \caption{\bf\small An AngularJS based web-application }
+  \label{fig:webapp}
+\end{figure}
 
-\todo {rest server https://hyperledger.github.io/composer/latest/reference/rest-server}
+From that web-application it is possible to list, add and edit assets and participants as well as submit transactions to the network. It is implemented in AngularJS\footnote{https://angular.io/} and connects to the REST server also provided by the composer tool-suit.

@@ -27,9 +27,7 @@ Before introducing the actual architecture and implementation, the structure of 
 
 Explaining further, the folder \textit{"chain"} contains a \textit{Hyperledger Composer} implementation of a business network. This business network is the main implementation of the INTERLACE work to create a working blockchain that consists mainly of chaincode\footnote{In the Hyperledger framework the language of Smart Contracts is referred to as `chaincode'.} implementations, but also of scripts to deploy and update the chaincode as well as to make the network accessible by starting it on the Hyperledger Fabric chain.
 
-\textcolor{red}{\bf ToDo: Add a short paragraph to describe what Composer is.}
-\textcolor{green}{Hyperledger Compose tries to make blockchain application development easier by offering a large, toolset together with a powerful framework. Its main purpose is to accelerate time need between requirements gathering and a final blockchain application in order to deliver fully functional business applications. \\
-Composer facilitates JavaScript and node.js in combination with proprietary language extensions to generate those business application an to run them on a Hyperledger Fabric instance.}
+Hyperledger Composer aims to make blockchain application development easier by offering a large toolset together with a powerful framework. Its main purpose is to accelerate the time needed between requirements gathering and a final blockchain application, delivering fully functional business applications. Composer facilitates JavaScript and node.js in combination with proprietary language extensions to generate such business application and to run them on a Hyperledger Fabric instance.
 
 \textit{"fabric"} is the Hyperledger Fabric base blockchain needed for running a business network where the chaincode bits are executed on. The chaincode bits from directory \textit{chain} are compiled to a \textit{.bna} file (``blockchain network archive'') which is then deployed to a Fabric network. These bna-files (also called banana files) can't be used by default by Hyperledger Fabric. They are, rather, part of a virtual infrastructure-like environment provided by Hyperledger Composer. Thus the API components of Composer provide wrappers to make a Composer implementation run on a pure Fabric network.
 
@@ -49,7 +47,7 @@ In deliverables D2.1 and D3.1 the current architecture was specified using the A
 
 The high-level functional model of D2.1 and D3.1 was used to derive a new payment network based on the blockchain approach. The new network platform involves using a publicly maintained and an easy-to-use blockchain which supports the principle of an interest-free mutual credit system enabling account-based balances rather than token-based (asset-based) currencies only. These considerations led to a prototypical implementation using Hyperledger Fabric together with Hyperledger Composer.
 
-Independent of the choice of blockchain environment, it was also important to develop a central payment network which is not only reliable and verifiable but also (to a specific extent) controllable in order to impose the basic Sardex payment rules on it. \textcolor{red}{Thus, the first implementation of the INTERLACE blockchain is actually centralised. The advantage is easy scalability to a distributed architecture as more circuits are added in other parts of Italy and beyond.}\textcolor{red}{ok!}
+Independent of the choice of blockchain environment, it was also important to develop a central payment network which is not only reliable and verifiable but also (to a specific extent) controllable in order to impose the basic Sardex payment rules on it. Thus, the first implementation of the INTERLACE blockchain is actually centralised. The advantage is easy scalability to a distributed architecture as more circuits are added in other parts of Italy and beyond.
 
 \subsection{Hyperledger Fabric Network}
 
@@ -83,7 +81,7 @@ For the sake of simplicity and in order to set up the prototype network quickly,
 
 The single \textbf{orderer} node in Figure \ref{fig:prototype-net} is responsible for atomic broadcasts, orders/batches transactions, and also signs each batch (block) to create unique and well-defined chains. The membership provider of the orderer uses a central and pre-configured certification authority \textbf{CA}.
 
-This network configures and starts one \textbf{peer}. This peer can be called the core of the environment because its main task is to handle the so-called \textit{smart logic} (chaincode). \st{As they are more specific,}\textcolor{red}{[I do not understand what you mean by `specific' here...]} \textcolor{green}{In detail, peers maintain the ledger by first endorsing a  transaction (e.g.\ credit and debit transfers in the case of INTERLACE), which they do by simulating them\footnote{This is the execution step in the Execute-Order-Validate Hyperledger architecture \cite{AndroulakiEtAl2018}}, then, during an intermediary step they are validated by the orderer and finally the peers commit the transaction to their local ledger.}
+This network configures and starts one \textbf{peer}. This peer can be called the core of the environment because its main task is to handle the so-called \textit{smart logic} (chaincode). More specifically, peers maintain the ledger by first endorsing a transaction (e.g.\ credit and debit transfers in the case of INTERLACE), which they do by simulating it.\footnote{This is the execution step in the Execute-Order-Validate Hyperledger architecture \cite{AndroulakiEtAl2018}} Then, in an intermediate step it is validated by the orderer and finally the peers commit it to their local ledger.
 
 A very simple network is defined and described by the above scenario, which can be set up following the instructions of Section \ref{sec:prototype}. Certainly, this scenario needs to be extended to a real-world environment, a few hints and considerations for which will be given in Figure \ref{fig:prototype-net-ext} and explained in Section \ref{sec:future-scene}.
 
@@ -179,9 +177,10 @@ The core configuration excerpt can be seen in Listing \ref{lst:configTxProfiles}
 
 Second, it sets up a channel \textit{InterlaceChannel} which is connected to a consortium named \textit{InterlaceConsoritum}. This channel is used for credit and debit operations where currently only one organisation is defined: namely, \textit{Sardex}.
 
-\st{Third, as mentioned initially, the anchor peers of the organizations are written in the form of transactions.}\textcolor{red}{I am not sure I understand what this means... Can you add a few more words of explanation?}\textcolor{green}{Third, as mentioned initially, anchor peers are recorded into the ledger. This is done by submitting a transaction to the ledger which is containing the main anchor peers}. Anchor peers may be defined for an organization using the config-property \textit{AnchorPeers}. The project defines a host called \textit{"peer0.sardex.sardex.net"} that provides services at port \textit{"7051"}, consistently with the crypto-config.yaml file. The host information is written into that initial transaction.
+Third, as mentioned initially, anchor peers are recorded into the ledger. This is done by submitting a transaction to the ledger which contains the main anchor peers. Anchor peers may be defined for an organization using the config-property \textit{AnchorPeers}. The project defines a host called \textit{"peer0.sardex.sardex.net"} that provides services at port \textit{"7051"}, consistently with the crypto-config.yaml file. The host information is written into that initial transaction.
 
 \begin{center}
+\vspace{-.3cm}
 \begin{minipage}{0.8\textwidth}
 \small
 \begin{lstlisting}[language=yaml,firstnumber=1,caption={\bf\small configtx.yaml excerpt -- Profiles definition}, captionpos=b,label=lst:configTxProfiles]
@@ -209,6 +208,7 @@ Profiles:
                 <<: *ApplicationCapabilities
 \end{lstlisting}
 \end{minipage}
+\vspace{-.3cm}
 \end{center}
 
 \textbf{docker-compose.yaml}
@@ -421,7 +421,7 @@ These cards provide all the information needed to connect to the INTERLACE block
 
 Access to Interlace/Sardex Business Network is granted to another user through the provision of a \textit{Business Network Card} which is called \textit{admin@sardex-open-network}.
 
-For INTERLACE we currently only have one user in place, the admin user. However, if the network gets deployed it will become necessary to grant access to other users, which can be done by creating an additional Business Network Card for \st{that particular user} \textcolor{red}{each new user}. Be aware that for \st{that} \textcolor{red}{each new} user a participant needs to be registered first in order to link it with a new network card. \textcolor{green}{both ok}
+For INTERLACE we currently only have one user in place, the admin user. However, if the network gets deployed it will become necessary to grant access to other users, which can be done by creating an additional Business Network Card for each new user. Be aware that for each new user a participant needs to be registered first in order to link it with a new network card. 
 
 \textbf{Edit Network}
 
@@ -464,8 +464,7 @@ In the black text-box the properties of that transactions can be provided as a J
   \label{fig:submit-credit-transfer}
 \end{figure}
 
-Once all the necessary properties have been provided, pressing "Submit" tries to commit the transaction to the blockchain. If an error is encountered, it is shown in red font attached to the same dialog. When everything goes as planned the transaction is endorsed, ordered, and committed to the peers. \st{The resulting actions will be visible with the assets/participants}
-\textcolor{red}{By `with the assets/participants' do you mean `also in the assets/participants JSON data structures'? If Yes, can you please substitute the text?} \textcolor{green}{The execution results will finally show up in the JSON records shown for assets and participants} as well as in the transaction log of the chain.
+Once all the necessary properties have been provided, pressing "Submit" tries to commit the transaction to the blockchain. If an error is encountered, it is shown in red font attached to the same dialog. When everything goes as planned the transaction is endorsed, ordered, and committed to the peers. The execution results will finally show up in the JSON records used for the assets and participants as well as in the transaction log of the chain.
 
 Details on how to configure and initialize INTERLACE transactions are covered in Section \ref{sec:technical-details} which discusses the technical details.
 
@@ -556,8 +555,7 @@ This section describes the core business logic, which is found in the \textit{ch
 \end{figure}
 
 
-\st{To explain the four JavaScript files we can say the following:}
-\textcolor{red}{In the lib directory,} \textcolor{green}{OK} \textit{config.js} contains the main configurations including things like time-outs, quick-transfer amounts, and transfer types and account type mappings, which are done in the form of a JSON object. Unfortunately, Composer doesn't offer static access to enumeration constants. All enumeration values of a type need to be addressed by a string value. This approach is quite dangerous and gives potentially space for a lot of common errors. INTERLACE tries to solve this issue by setting up an object with "frozen"\footnote{\url{https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze}} attributes.
+In the lib directory, \textit{config.js} contains the main configurations including things like time-outs, quick-transfer amounts, and transfer types and account type mappings, which are done in the form of a JSON object. Unfortunately, Composer doesn't offer static access to enumeration constants. All enumeration values of a type need to be addressed by a string value. This approach is quite dangerous and gives potentially space for a lot of common errors. INTERLACE tries to solve this issue by setting up an object with "frozen"\footnote{\url{https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze}} attributes.
 
 In Listing \ref{lst:enumMap} a JavaScript mapping of the cto model enum type \textit{Unit} in \ref{lst:enumCTO} is illustrated.
 
@@ -612,7 +610,7 @@ Then, during execution the \textit{transfer} input parameter may be used like an
 
 \subsection{Init Blockchain}
 
-The only transaction in \textit{init.js} should be executed only once, otherwise it will lead to an inconsistent blockchain if executed twice. The reason is that this initialisation script sets up a couple of participants with an account asset each to immediately test the blockchain. Thus, after the "InitBlockchain" transaction has been executed the chain contains at least two members and two accounts in order to move money around by applying credit and debit operations. \textcolor{red}{I think you are missing the next bit of the explanation. For example (change/fix as needed):} \textcolor{green}{Therefore, executing the initialisation multiple times will create a pair of participants each time, leading to a configuration that does not match other parts of the model.}
+The only transaction in \textit{init.js} should be executed only once, otherwise it will lead to an inconsistent blockchain if executed twice. The reason is that this initialisation script sets up a couple of participants with an account asset each to immediately test the blockchain. Thus, after the "InitBlockchain" transaction has been executed the chain contains at least two members and two accounts in order to move money around by applying credit and debit operations. Therefore, executing the initialisation multiple times will create a pair of participants each time, leading to a configuration that does not match other parts of the model.
 
 Listing \ref{lst:initBlock} shows parts of the actual creation of an asset as well as of a participant. It uses \textit{getFactory()}, which is part of the Composer API to generate new instances of various types. The factory offers a function \textit{newResource} to actually create first an "Individual" from namespace \textit{net.sardex.interlace} and afterwards a "CCAccount" residing in the same namespace. The namespace is not visible in the script of Listing \ref{lst:initBlock} because it has been configured in the config.js file and applied to the config object.
 
@@ -720,8 +718,7 @@ if (transfer.amount <= config.debit.quick_transfer_amount) {
 \end{minipage}
 \end{center}
 
-This is done by issuing a \textit{RequestDebitAcknowledge} event of namespace \textit{net.sardex.interlace} defined in the CTO model. This event has an \textit{otp} property, and a \textit{debitorAccount} \textcolor{red}{<-- Should this be fromAccount?} property which is of type \textit{Account}. Such a DebitTransfer, which needs to be confirmed, has to be stored for later. For that purpose a new asset has been created named PendingTransfer. So for every pending transfer an entry in PendingTransfer is going to be created. \st{After this entry has been created by function} \textit{insertPendingTransfer} it \textcolor{red}{what is this "it" referring to? Better use the noun rather than the pronoun} \st{returns an OTP usable for the emitted event.}
-\textcolor{green}{Function \textit{insertPendingTransfer} returns an OTP after a PendingTransfer entry has been created which will be part of a newly created event, emitted to the dedicated users.}
+This is done by issuing a \textit{RequestDebitAcknowledge} event of namespace \textit{net.sardex.interlace} defined in the CTO model. This event has an \textit{otp} property, and a \textit{debitorAccount} \textcolor{red}{<-- Should this be fromAccount?} property which is of type \textit{Account}. Such a DebitTransfer, which needs to be confirmed, has to be stored for later. For that purpose a new asset has been created named PendingTransfer. So for every pending transfer an entry in PendingTransfer is going to be created. Function \textit{insertPendingTransfer} returns an OTP, after a PendingTransfer entry has been created, which will be part of a newly created event, emitted to the dedicated users.
 
 \textbf{DebitTransferAcknowledge chaincode}
 
@@ -729,7 +726,7 @@ Each entry in PendingTransfer is identified by an OTP in a way that a transfer c
 
 \textbf{Note:} For production systems this identification might include an additional key since for large numbers of PendingTransfers the OTP generated in this way might not be unique anymore.
 
-Listing \ref{lst:js-ack} shows the main part of \textit{DebitTransferAcknowledge}, which is different from the other transactions. The variable \textit{ack} in the script is a transaction object provided to the function which contains the \textit{PendingTransfer} read into variable \textit{pT}. \st{Then the code checks whether it is still in the pending state, in case it is continued} \textcolor{red}{Sorry. not clear what you mean by "in case it is continued"}. \textcolor{green}{Then the codes tries to verify the \textit{TransactionStatus}. If the transaction is in state \textit{Pending} it may proceed i}\st{I}n any other case an error is thrown and the transaction is discarded (!not! recorded into the ledger).
+Listing \ref{lst:js-ack} shows the main part of \textit{DebitTransferAcknowledge}, which is different from the other transactions. The variable \textit{ack} in the script is a transaction object provided to the function which contains the \textit{PendingTransfer} read into variable \textit{pT}. Then the code tries to verify the \textit{TransactionStatus}. If the transaction is in state \textit{Pending} it may proceed; in any other case an error is thrown and the transaction is discarded (!not! recorded into the ledger).
 
 If the process is continued the timestamp of the transaction is checked against the \textit{expires} date property of the pending transfer. Consequently, if expired, the state is updated to \textit{"Expired"} and function \textit{DebitTransferAcknowledge} returns with the corresponding status \textit{AcknowledgeStatus}.
 

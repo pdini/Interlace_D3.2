@@ -718,7 +718,9 @@ if (transfer.amount <= config.debit.quick_transfer_amount) {
 \end{minipage}
 \end{center}
 
-This is done by issuing a \textit{RequestDebitAcknowledge} event of namespace \textit{net.sardex.interlace} defined in the CTO model. This event has an \textit{otp} property, and a \textit{debitorAccount} \textcolor{red}{<-- Should this be fromAccount?} property which is of type \textit{Account}. Such a DebitTransfer, which needs to be confirmed, has to be stored for later. For that purpose a new asset has been created named PendingTransfer. So for every pending transfer an entry in PendingTransfer is going to be created. Function \textit{insertPendingTransfer} returns an OTP, after a PendingTransfer entry has been created, which will be part of a newly created event, emitted to the dedicated users.
+If a confirmation is needed the transaction \textit{DebitTransfer} cannot move the amount from account A to account B instantaneously. To remember all values of that transaction they are stored inside asset \textit{PendingTransfer} which uses an OTP as identifier. The insertion done by Function \textit{insertPendingTransfer} returns a new OTP when successfully, creating a transfer which is awaiting confirmation.
+
+In order to tell a user that there is a pending confirmation waiting \text{DebitTransfer} issues an event called \textit{RequestDebitAcknowledge} of namespace \textit{net.sardex.interlace} defined in the CTO model. When instantiated, the event obtains a reference to the just created \textit{PendingTransfer} which is done by using the \textit{factory} object (received by the composer API) and calling \textit{newRelationship} which utilizes the OTP references.
 
 \textbf{DebitTransferAcknowledge chaincode}
 
@@ -832,9 +834,38 @@ As this is a maintenance transaction it should be executed only by an admin or a
 \subsection{Queries}
 \label{subsec:queries}
 
-\todo{}
+Using Hyperledger Composer it is easily possible to read data written into the ledger. This can be done by using its bespoke query language by defining a file called \textit{queries.qry}. 
 
-\subsection{ACL-file}
+The Hyperledger Composer Query Language\footnote{\url{https://hyperledger.github.io/composer/v0.19/reference/query-language}} is used in INTERLACE to read information about \textit{PendingTransfer} as well as about \textit{DeltaDebt}. Although looking like SQL a very limited set of operators are possible to use. Nevertheless, for INTERLACE this limitations are not relevant because simple selection and filtering is sufficient which can be observed looking at listing \ref{lst:queries}.
+
+The first query in the listing \textit{selectExpiredPendingTransfers} is used by transaction \textit{CleanupPendingTransfers} to find all transfers which are outdated and should be marked as \textit{Expired}. In detail the \textit{SELECT} keyword expects an asset defined in the CTO and will return all of the entries in the ledger filtered by the \textit{WHERE} condition.
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\small
+\begin{lstlisting}[language=sql,firstnumber=1,caption={\bf\small INTERLACE business network queries}, captionpos=b,label=lst:queries]
+query selectExpiredPendingTransfers {
+  description: "select all expired transfer which are still in state pending"
+  statement:
+      SELECT net.sardex.interlace.PendingTransfer
+       WHERE ((expires <= _$now) AND (state == 'Pending'))
+}
+query selectDeltaDebt {
+  description: "select all open debts"
+  statement:
+      SELECT net.sardex.interlace.DeltaDebt
+       WHERE ((deptPos > 0) AND (debitorID == _$ID))
+       ORDER BY [created ASC]
+}
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+Here we filter against property \textit{expires} and state equals to 'Pending'. Parameters like \textit{\_\$now} may be supplied using a JSON like reference from JavaScript\footnote{\url{https://hyperledger.github.io/composer/v0.19/api/client-businessnetworkconnection\#buildquery}}.
+
+In query \textit{selectDeltaDebt} all open debts for particular debitor (which is a member of the circuit) having id \textit{\_\$ID} are selected. Like parameter \textit{\_\$now}, parameter \textit{\_\$ID} needs to be set by the calling counterpart.
+
+\subsection{Access Control Language File}
 
 \todo{}
 

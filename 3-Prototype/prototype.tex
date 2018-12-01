@@ -941,7 +941,7 @@ For INTERLACE all the configurations necessary to run that server are gathered i
 \section{Web Application}
 \label{sec:webapp}
 
-In figure \label{fig:webapp} an illustration of a web page generated for the INTERLACE business network implementation is shown. It has been created using generator-hyperledger-composer\footnote{\url{https://www.npmjs.com/package/generator-hyperledger-composer}} which is a yeoman\footnote{\url{http://yeoman.io/}} module.
+In figure \ref{fig:webapp} an illustration of a web page generated for the INTERLACE business network implementation is shown. It has been created using generator-hyperledger-composer\footnote{\url{https://www.npmjs.com/package/generator-hyperledger-composer}} which is a yeoman\footnote{\url{http://yeoman.io/}} module.
 
 \begin{figure}[htbp]
   \centering
@@ -951,3 +951,16 @@ In figure \label{fig:webapp} an illustration of a web page generated for the INT
 \end{figure}
 
 From that web-application it is possible to list, add and edit assets and participants as well as submit transactions to the network. It is implemented in AngularJS\footnote{https://angular.io/} and connects to the REST server also provided by the composer tool-suit.
+
+Consequently, it is possible to manage assets like \textit{SysAccount}, \textit{CCAccount}, \textit{PendingTransfer}, \textit{DeltaDebt}. Participants like \textit{Subscriber} and \textit{Individual} are using these assets whereas transaction \textit{CreditTransfer}, \textit{DebitTransfer}, \textit{DebitTransferAcknowledge} and \textit{CleanupPendingTransfer} handling the way how the assets are processed.	
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.3\textwidth]{Figures/webapp-transfer}
+  \caption{\bf\small Credit/Debit Transfers }
+  \label{fig:webapp-transfer}
+\end{figure}
+
+Assets may be changed directly with the appropriate permissions without facilitating any of the mentioned transactions in order to administer them. Regardless of the way of changing assets, thus, using custom transactions or just executing changes directly, all manipulations to the chain are recorded to the chain and clearly traceable.
+
+In figure \ref{fig:webapp-transfer} the graphical interface for an invocation of a credit/debit transfer is illustrated. It is picking up a \textit{fromAccount}, \textit{toAccount} and a amount which is going to be transferred. As explained in section \ref{sec:chaincode}, for a \textit{DebitTransfer} to be performed, the owner of the \textit{fromAccount} needs to send a \textit{DebitTransferAcknowledge} confirmation.

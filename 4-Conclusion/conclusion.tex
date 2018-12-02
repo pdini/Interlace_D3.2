@@ -8,23 +8,41 @@ Eduard Hirsch
 
 This last chapter discuss the goals reached as well as the problems encountered during developing the INTERLACE prototype. Additionally, emphasis on possible enhancements necessary and issues which needs to be taken into account in order to bring that prototype to productive solution.
 
+Finally parts are discussed which could not be finished as well as after-INTERLACE goals are addressed.
+
 \section{Falsey and Pitfalls}
 
 When using hyperledger composer but also when connecting to hyperledger fabric directly some points are important to take care of. Developers have to be aware that working with chain-code or smart contracts, although highly abstracted from the user already by various frameworks, to interact with a distributed ledger like a blockchain, is quite different from accessing data as usual in a RDBMS\footnote{Relational Database Management System}.
 
-Next some of those typical peculiarities are approached attempted to be cleared up.
+Next some of those typical peculiarities are approached and attempted to be clarified.
 
-TODO ------------------------
+\subsection{Deterministic Execution}
 
-\begin{verbatim}
-  - id/date-issues, "finality"
-  - concurrency issues - ledger needs to be evaluate-able any time
-  - create objects/entries deterministically
-  - connection rest server
-  - from messages to transaction events
-  - different network versions!! model inconsistencies, changes/errors "permanent"
-  - enum mapping (move from chain-code section?)
-\end{verbatim}
+One of the most important things to take care of when writing chain-code applications is the deterministic execution of transaction. Which seams quite obvious at the beginning is sometimes quite challenging to achieve.
+
+One example is the \textbf{generation of IDs}:  In a standard database environment simple locking mechanisms are in place to ensure correct primary keys for entries in a table. For blockchains  which are living in a distributed, consensus-based system it is problematic to create identifiers over chain-code execution. The reason is that each peer processing a transaction would compute a new ID completely independent and most likely at the about the same time. Thus, if such a key-/ID-generation would create different IDs on different clients no consensus may be reached and although nothing is actually wrong with the transaction itself the resulting blockchain states would be different and therefore the last action would be rolled back.
+
+This would be especially hard to deal with during race conditions and even more difficult to find out why a particular problem has been occurring.
+
+One solution to that problem would be to generate the ID from the client and pass it to the transaction as parameter which would result in much safer creation process which is further much faster during execution.
+
+Another problem poses the usage of \textbf{random numbers} which is fairly impossible to use in chain-code executions as such a calculation would reach obviously different results on the various peers of the network.
+
+But also not just plain random number generation but also the \textbf{creation of a date} has a random factor. It is not possible to know when a peer in the network actually receives a new transaction and, thus, dates created during chain-code execution are different and when written into an e.g. asset also creates different blockchains on different clients and would be therefore rolled back. Even if peers would reach consensus validation of the blockchain nodes retroactively would not be possible as the date has been changed completely.
+
+To sum up the above statements: \textbf{Chain-code needs to be executed deterministically and has to reach, given its input parameters, the same result in any point in time}.
+
+\textbf{Note:} Another consequence of that statement is that a lot of parameters can not be generated inside of chain-code but need to be provided as parameter to a transaction. But if parameters may be creatable on client-side only, it is also necessary to implement that logic in a way that these can not be used to fool the system or bring it into an inconsistent state.
+
+\subsection{Upgrade Network}
+
+- different network versions!! model inconsistencies, changes/errors "permanent"
+
+\subsection{Hyperledger Composer Specifics}
+
+- enum mapping (move from chain-code section?)
+- from messages to transaction events
+- connection rest server
 
 \section{Identity Management}
 \label{sec:id-management}

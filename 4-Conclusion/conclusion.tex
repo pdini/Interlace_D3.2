@@ -30,19 +30,34 @@ Another problem poses the usage of \textbf{random numbers} which is fairly impos
 
 But also not just plain random number generation but also the \textbf{creation of a date} has a random factor. It is not possible to know when a peer in the network actually receives a new transaction and, thus, dates created during chain-code execution are different and when written into an e.g. asset also creates different blockchains on different clients and would be therefore rolled back. Even if peers would reach consensus validation of the blockchain nodes retroactively would not be possible as the date has been changed completely.
 
-To sum up the above statements: \textbf{Chain-code needs to be executed deterministically and has to reach, given its input parameters, the same result in any point in time}.
+To sum up the above statements: \textbf{Chain-code needs to be executed deterministically and has to reach, given its input parameters, the same result(s) at any point in time}.
 
 \textbf{Note:} Another consequence of that statement is that a lot of parameters can not be generated inside of chain-code but need to be provided as parameter to a transaction. But if parameters may be creatable on client-side only, it is also necessary to implement that logic in a way that these can not be used to fool the system or bring it into an inconsistent state.
 
 \subsection{Upgrade Network}
 
-- different network versions!! model inconsistencies, changes/errors "permanent"
+Traditionally updating a database after changes to database model may be quite cumbersome due to new field, foreign keys and many more issues. However, for those various methods and strategies are in place for handling them.
+
+Blockchains are usually spread over various peers storing replicated data. Therefore, in contrast to traditional databases, it is inherently more difficult to change the distributed structures to fit some new schema necessary to add a new feature or functionality.
+
+There may be several problems updating and changing attributes and values getting it ready for the next version of the network. It is necessary to apply all changes to network before others are able to manipulate the current ledger state in order to keep consistency and reliably achieve all fixes.
+
+Thus it is quite important to get everything right from the beginning, as it can be extremely difficult to apply certain changes. Consequently, it is highly advisable to think about possible changes and future scenarios together with possible side-effects and costs before first deployment to production systems.
 
 \subsection{Hyperledger Composer Specifics}
 
-- enum mapping (move from chain-code section?)
-- from messages to transaction events
-- connection rest server
+Composer can be seen als rapid-development approach and its API sits on top of hyperledger fabric framework. It tries to shield complexity from the user and aims to significantly reduce time necessary to create distributed applications for hyperledger fabric.
+
+For INTERLACE this meant that
+
+\begin{itemize}
+	\item models could be transferred easily,
+	\item chain-code could be based on the models,
+	\item a REST-Server has been supplied and
+	\item a web-application generator has been available.
+\end{itemize}
+
+Consequently, it is a framework ideal for prototyping. For productive systems it would necessary to change to a plain fabric implementation because Composer is still in a quite early stage and there even are rumours that it will be discontinued. The reason is that some of the new features of the fabric releases are deviating from the structures implemented by composer. So it is getting more and more difficult for Hyperledger Composer developers to provide new features and functionalities available for fabric.
 
 \section{Identity Management}
 \label{sec:id-management}

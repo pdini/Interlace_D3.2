@@ -46,30 +46,35 @@ Thus it is quite important to get everything right from the beginning, as it can
 
 \subsection{Hyperledger Composer Specifics}
 
-Composer can be seen als rapid-development approach and its API sits on top of hyperledger fabric framework. It tries to shield complexity from the user and aims to significantly reduce time necessary to create distributed applications for hyperledger fabric.
+Composer can be seen as rapid-development approach and its API sits on top of hyperledger fabric framework. It tries to shield complexity from the user and aims to significantly reduce time necessary to create distributed applications for hyperledger fabric.
 
 For INTERLACE this meant that
 
 \begin{itemize}
 	\item models could be transferred easily,
-	\item chain-code could be based on the models,
+	\item chain-code could be based on those models,
 	\item a REST-Server has been supplied and
 	\item a web-application generator has been available.
 \end{itemize}
 
-Consequently, it is a framework ideal for prototyping. For productive systems it would necessary to change to a plain fabric implementation because Composer is still in a quite early stage and there even are rumours that it will be discontinued. The reason is that some of the new features of the fabric releases are deviating from the structures implemented by composer. So it is getting more and more difficult for Hyperledger Composer developers to provide new features and functionalities available for fabric.
+Consequently, it is a framework ideal for prototyping. Also when finding the right cloud provider spinning up a network would be straight forward. When hosting a network without any external provider which knows how to run those networks, a lot of the initial speed in creating a network might be lost because then a much deeper understanding of the whole architecture is necessary, thus, also a higher effort is needed to get a ready implementation to work.
+
+\textbf{Note:} For productive systems it would necessary to change to a plain fabric implementation because Composer is still in a quite early stage and there even are rumours that it will be discontinued. The reason is that some of the new features of the fabric releases are deviating from the structures implemented by composer. So it is getting more and more difficult for Hyperledger Composer developers to provide new features and functionalities available for fabric.
 
 \section{Identity Management}
 \label{sec:id-management}
 
-TODO ------------------------
+Identity Management as mentioned in previous sections has been skipped for the prototype in order to simplify the environment, decrease development efforts and therefore offer an easy access to an example mutual credit system.
 
-\begin{verbatim}
-  - permissions
-  - https://www.codementor.io/gangachris125/passport-jwt-authentication-for-hyperledger-composer-rest-server-jqfgkoljn
-  - passport.js (swagger) www.passportjs.org/docs/
-  - user profile strategies
-\end{verbatim}
+Nevertheless, it would be possible to create additional participants and grant them access to the network instead of just the currently used admin-account. E.g. it would be possible to issue an identity card for the first participant defined in transaction "InitBlockchain" which is identified by "m1". The example below illustrates how that would be done:
+
+\begin{lstlisting}[language=bash]
+	composer identity issue -c admin@tutorial-network -f m1.card -u m1 -a "resource:net.sardex.interlace.Individual#m1" -x true 
+\end{lstlisting}
+
+This identity card is facilitated by the rest server identifies a participant in the business network. Thus, every user accessing the REST server needs to prove its identity before it can act as such. To do so composer-rest-server authentication middleware implemented in JavaScript called \textit{Passport.js}\footnote{\url{http://www.passportjs.org/}}.
+
+The passport middleware offers many different authentication strategies and is a quite mature Open Source framework. An example on how to authenticate with OAuth and GitHub can be found at the Composer documentation website\footnote{\url{https://hyperledger.github.io/composer/latest/integrating/enabling-rest-authentication}} but also different schemes can be used like JSON Web Tokens (JWT\footnote{\url{https://jwt.io/}}) mentioned in the issue tracker of the Hyperledger Composer GitHub page\footnote{\url{https://github.com/hyperledger/composer/issues/2038}}.
 
 \section{Future Scenarios}
 \label{sec:future-scene}
@@ -86,3 +91,4 @@ TODO ------------------------
 \section{Final Review and Open Points}
 
 TODO ------------------------
+ASIM agents as independent nodes, verification methods, testing 

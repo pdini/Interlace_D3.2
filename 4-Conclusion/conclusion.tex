@@ -10,7 +10,7 @@ This last chapter discuss the goals reached as well as the problems encountered 
 
 Finally parts are discussed which could not be finished as well as after-INTERLACE goals are addressed.
 
-\section{Falsey and Pitfalls}
+\section{Best Practices, Falsey and Pitfalls}
 
 When using hyperledger composer but also when connecting to hyperledger fabric directly some points are important to take care of. Developers have to be aware that working with chain-code or smart contracts, although highly abstracted from the user already by various frameworks, to interact with a distributed ledger like a blockchain, is quite different from accessing data as usual in a RDBMS\footnote{Relational Database Management System}.
 
@@ -42,7 +42,7 @@ Blockchains are usually spread over various peers storing replicated data. There
 
 There may be several problems updating and changing attributes and values getting it ready for the next version of the network. It is necessary to apply all changes to network before others are able to manipulate the current ledger state in order to keep consistency and reliably achieve all fixes.
 
-Thus it is quite important to get everything right from the beginning, as it can be extremely difficult to apply certain changes. Consequently, it is highly advisable to think about possible changes and future scenarios together with possible side-effects and costs before first deployment to production systems.
+Thus, it is quite important to get everything right from the beginning, as it can be extremely difficult to apply certain changes. Consequently, it is highly advisable to think about possible changes and future scenarios together with possible side-effects and costs before first deployment to production systems.
 
 \subsection{Hyperledger Composer Specifics}
 
@@ -64,25 +64,27 @@ Consequently, it is a framework ideal for prototyping. Also when finding the rig
 \section{Identity Management}
 \label{sec:id-management}
 
-Identity Management as mentioned in previous sections has been skipped for the prototype in order to simplify the environment, decrease development efforts and therefore offer an easy access to an example mutual credit system.
+Identity Management as mentioned in previous sections has been skipped for the prototype in order to simplify the environment, decrease development efforts and therefore offer an easy access to an example mutual credit system to understand the basics.
 
-Nevertheless, it would be possible to create additional participants and grant them access to the network instead of just the currently used admin-account. E.g. it would be possible to issue an identity card for the first participant defined in transaction "InitBlockchain" which is identified by "m1". The example below illustrates how that would be done:
+Nevertheless, it would be quickly possible to create additional participants and grant them access to the network instead of just the currently used admin-account. E.g. an identity card can be issued for the first participant defined in transaction "InitBlockchain" which is identified by "m1". The example below illustrates how that might be done:
 
 \begin{lstlisting}[language=bash]
 	composer identity issue -c admin@tutorial-network -f m1.card -u m1 -a "resource:net.sardex.interlace.Individual#m1" -x true 
 \end{lstlisting}
 
-This identity card is facilitated by the rest server identifies a participant in the business network. Thus, every user accessing the REST server needs to prove its identity before it can act as such. To do so composer-rest-server authentication middleware implemented in JavaScript called \textit{Passport.js}\footnote{\url{http://www.passportjs.org/}}.
+This identity card is facilitated by the rest server and corresponds to participant in the business network. But before a user can act with that identity it is necessary when accessing the REST server to log in first and authenticate in some sort of way. To do so composer-rest-server uses an authentication middleware implemented in JavaScript called \textit{Passport.js}\footnote{\url{http://www.passportjs.org/}}.
 
 The passport middleware offers many different authentication strategies and is a quite mature Open Source framework. An example on how to authenticate with OAuth and GitHub can be found at the Composer documentation website\footnote{\url{https://hyperledger.github.io/composer/latest/integrating/enabling-rest-authentication}} but also different schemes can be used like JSON Web Tokens (JWT\footnote{\url{https://jwt.io/}}) mentioned in the issue tracker of the Hyperledger Composer GitHub page\footnote{\url{https://github.com/hyperledger/composer/issues/2038}}.
+
+Passport is a commonly known middleware for authentication and may be applied also for different scenarios, thus, also is usable well when swapping Composer for another technology.
 
 \section{Future Scenarios}
 \label{sec:future-scene}
 
 \begin{figure}[htbp]
   \centering
-  %\includegraphics[width=0.5\textwidth, clip, trim=1mm 1mm 1mm 1mm]{Figures/ext-network}
-  \caption{\bf\small TODO: Extended Network Structure}
+  \includegraphics[width=1.0\textwidth, clip, trim=1mm 1mm 1mm 1mm]{Figures/extended-network}
+  \caption{\bf\small Extended Network Structure}
   \label{fig:prototype-net-ext}
 \end{figure}
 

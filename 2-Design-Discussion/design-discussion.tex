@@ -6,30 +6,46 @@
 Eduard Hirsch
 \end{center}
 
-\section{ASIM and block-chain}
+\section{ASIM and blockchain}
 \label{sec:asim}
 
-Creating a scalable distributed application is a big challenge. Even more when monolithic legacy systems need to be addressed, like in case of the Sardex payment systems realized on Sardinia. For INTERLACE this meant to deal with a system which is currently stable and working reliable, however, which is not scaling well in order to provided multiple other circuits beside from the original one in Sardina.
+Creating a scalable distributed application is a big challenge. Even more when monolithic legacy systems need to be addressed, like in case of the Sardex payment systems realized on Sardinia. For INTERLACE this meant to deal with a system which is currently stable and working reliably. The drawback of this system is, that it is not scaling well which became more and more evident in recent time and especially will be a problem when provided to multiple other circuits outside of the region besides from the original one in Sardina.
 
-This report will describe a prototypical solution on how distribution and saleability are handled using proper technologies which allow the idea of a mutual credit system to grow and evolve. In detail for INTERLACE a architectural process was introduced. This process is trying to thoroughly use models which are well tested and shared amongst each other in a very specific and detailed way.
+This report will describe a prototypical solution on how distribution and saleability are handled using proper technologies which allow the idea of a mutual credit system to grow and evolve. In detail for INTERLACE an architectural process was introduced which is trying to thoroughly use models that are well tested and shared amongst each other in a very specific and detailed way.
 
-As described in \cite{INTERLACE_D21} and ASM definition has been declared which acts as a ground model for the INTERLACE prototype. Then this paper based definition has been transformed in executable code realized with the ICEF\footnote{Interaction Computing Execution Framework}. As next step, which attains attention in this report, is the last before the actual testing which needs to be done on various levels.
+As described in \cite{INTERLACE_D21} an ASM definition has been declared which acts as a ground model for the INTERLACE prototype. Then this paper based definition has been transformed into executable code realized with the ICEF\footnote{Interaction Computing Execution Framework} which is based on ASM language primitives. The next step, which attains main attention in this report, is the last before the actual testing which needs to be done on various levels.
 
+In the following subsections the various topics encountered during planning and evolving of the new blockchain based system are addressed.
 
+\subsection{From Servers to Agents and Peers}
 
-TODO ------------------------
+INTERLACE encourages not just a change in technology but also an architectural culture change. Currently many systems in industry are based on monolithic approaches which are stable and based on commonly known and highly adopted implementation strategies.
 
-\begin{verbatim}
+Often not even based on multiple tiers those classic strategies suit the needs of small and middle sized projects but come at high cost for very large application services and their providers. When increasing in size they become more and more difficult to manage given
 
-ASIM and block-chain "intro":
-  - requirement/process description
+\begin{itemize}
+	\item their large code base,
+	\item non-autonomous teams,
+	\item lack in agility,
+	\item difficult deployments and
+	\item high commitment to specific technologies or even worse vendor lock-ins.
+\end{itemize}
+
+Modern large scale architectures therefore aim for finding different possibilities in the field of SOA\footnote{Service Oriented Architecture [TODO Ref]} and when advancing further in Micro-Services Architectures. Especially Micro-Services Architectures [TODO Ref] claim to solve these problems by providing simple and easy to build applications at the expense of higher network load and more difficult systems integration.
+
+However, INTERLACE, as mentioned before is favouring a different solutions which has similar ideas but is still in most fundamental parts very different, namely, blockchains.
+
+MS vs BS (https://msdn.microsoft.com/en-us/magazine/mt829754.aspx)
+
   - client-server to peer model
   - agent \& peer model - view 
-  - testing
-    - separation test types
-    - v-model? agile
-    - black/white box tests
-\end{verbatim}
+
+\subsection{Testing}
+
+ - testing
+ - separation test types
+ - v-model? agile
+ - black/white box tests
 
 \section{Mutual Credit and Distributed Ledger}
 \label{sec:dlt} 

@@ -6,13 +6,13 @@
 Eduard Hirsch
 \end{center}
 
-This last chapter discuss the goals reached as well as the problems encountered during developing the INTERLACE prototype. Additionally, emphasis on possible enhancements necessary and issues which needs to be taken into account in order to bring that prototype to productive solution.
+This last chapter discusses the goals reached as well as the problems encountered during developing the INTERLACE prototype. Additionally, emphasis it put on possible enhancements necessary and issues which needs to be taken into account in order to bring that prototype to productive solution.
 
 Finally parts are discussed which could not be finished as well as after-INTERLACE goals are addressed.
 
 \section{Best Practices, Falsey and Pitfalls}
 
-When using hyperledger composer but also when connecting to hyperledger fabric directly some points are important to take care of. Developers have to be aware that working with chain-code or smart contracts, although highly abstracted from the user already by various frameworks, to interact with a distributed ledger like a blockchain, is quite different from accessing data as usual in a RDBMS\footnote{Relational Database Management System}.
+When using hyperledger composer but also when connecting to hyperledger fabric directly some points are important to take care of. Developers have to be aware that working with chain-code or smart contracts, although highly abstracted from the user already by various frameworks, and interacting with a distributed ledger like a blockchain, it is quite different from accessing data as usual in a RDBMS\footnote{Relational Database Management System}.
 
 Next some of those typical peculiarities are approached and attempted to be clarified.
 
@@ -57,7 +57,7 @@ For INTERLACE this meant that
 	\item a web-application generator has been available.
 \end{itemize}
 
-Consequently, it is a framework ideal for prototyping. Also when finding the right cloud provider spinning up a network would be straight forward. When hosting a network without any external provider which knows how to run those networks, a lot of the initial speed in creating a network might be lost because then a much deeper understanding of the whole architecture is necessary, thus, also a higher effort is needed to get a ready implementation to work.
+Consequently, it is a framework ideal for prototyping. Also when finding the right cloud provider spinning up a network would be straight forward. When hosting a network without any external provider which knows how to run those networks, a lot of the initial speed during creating a network might be lost because then a much deeper understanding of the whole architecture is necessary, thus, also a higher effort is needed to get a ready implementation to work.
 
 \textbf{Note:} For productive systems it would necessary to change to a plain fabric implementation because Composer is still in a quite early stage and there even are rumours that it will be discontinued. The reason is that some of the new features of the fabric releases are deviating from the structures implemented by composer. So it is getting more and more difficult for Hyperledger Composer developers to provide new features and functionalities available for fabric.
 
@@ -83,7 +83,7 @@ Passport is a commonly known middleware for authentication and may be applied al
 
 Because of using hyperledger fabric it is only a matter of configuration of extending the network. The current approach taken for INTERLACE prototype, shown in figure \ref{fig:prototype-net-ext} creates a new organisation for every payment circuit dealing with their specific region. Consequently, each region would be responsible for hosting their own peers and ideally also their own certification authority (CA), however, certificates might be still handled by the Sardex CA. 
 
-Sardex, in this scenario, is acting as a kind of knowledge provider, transferring architecture and how run such an additional circuit getting in a similar role of a franchising cooperation. The clients and various other visible graphical interfaces may be branded in various ways, nevertheless, the underlying structure is predefined by Sardex in order to make the network work consistently.
+Sardex, in this scenario, is acting as a kind of knowledge provider, transferring architecture and how to run such an additional circuit getting in a similar role of a franchising cooperation. The clients and various other visible graphical interfaces may be branded in various ways, nevertheless, the underlying structure is predefined by Sardex in order to make the network work consistently.
 
 The orderer will be handled by Sardex as well but might be later hand over to an e.g. non-profit organisation to guarantee fair and clear defined rules. To ensure a reliable system and a high performance throughput an orderer can be clustered locally but also over various regional separated areas.
 
@@ -96,7 +96,7 @@ The orderer will be handled by Sardex as well but might be later hand over to an
 
 \section{Final Review and Open Points}
 
-That ledger application prototype is forming the stable and scalable basis for reliable payment circuit. Although the prototype is developed with Hyperledger Composer which IBM is pretty likely to discontinuing support for, an subsequent implementation in Hyperledger Fabric only will be much easier to realize. Also because newer versions of fabric support an node.js SDK\footnote{Software Development Kit} which would even allow to transfer JavaScript code bits.
+That ledger application prototype is forming the stable and scalable basis for reliable payment circuit. Although the prototype is developed with Hyperledger Composer which IBM is pretty likely to discontinuing support for, an subsequent implementation in Hyperledger Fabric only, will be much easier to realize. Also because newer versions of fabric support an node.js SDK\footnote{Software Development Kit} which would even allow to transfer JavaScript code bits.
 
 Basically the goal of creating a reliable DLT has been achieved and forms necessary foundation for the various other services provided in future by the productive business solution created for Sardex.
 
@@ -104,10 +104,10 @@ Basically the goal of creating a reliable DLT has been achieved and forms necess
 
 The \textbf{GDPR}\footnote{General Data Protection Regulation\cite{GDPR}} taken into effect from the beginning of 2018 also posses a challenge to blockchain solutions and therefore also for the INTERLACE project. It is necessary that person related information is not exposed to other parties unless necessary and done in agreement with them. Also each information collected for and by the user needs to be deletable if requested and certainly possible to be looked up what data exactly has been collected.
 
-Information is reliably stored inside of a blockchain, thus, looking up information is actually not an issue but rather keeping it secret from being read by other parties because standard blockchain approaches are copy everything to any peer. This is solved currently by making the actual chain only accessible by peers which are owned by the organisation running the local circuit. The Clients available for performing transfers will have restricted access an cannot see the whole blockchain.
+Information is reliably stored inside of a blockchain, thus, looking up information is actually not an issue but rather keeping it secret from being read by other parties because standard blockchain approaches are copying everything to any peer. This is solved currently by making the actual chain only accessible by peers which are owned by the organisation running the local circuit. The Clients available for performing transfers will have restricted access an cannot see the whole blockchain.
 
 In later stages it may be possible that every business/party participating in the payment network accessing the blockchain directly, thus, running a node. In this case the so called \textit{SideDB}\footnote{\url{https://hyperledger-fabric.readthedocs.io/en/latest/private-data/private-data.html}} is taken into consideration because it is a way offered by Hyperledger Fabric to store information which is only known by the respective client and only shared if permitted by the client.
 
-This \textit{SideDB} also solves the problem of GDPR relevant data, because first, it is only exposed to whom it may concerned, and second, it can be purged without making the chain invalid. The reason is that in case of SideDB only hashes of transactions and data are kept inside the chain still being verifiable because of the generated hashes. Nevertheless, the data only needs to be provided if specifically asked for, e.g. in case of an (external) audit.
+This \textit{SideDB} also solves the problem of GDPR relevant data, because first, it is only exposed to whom it may concerned, and second, it can be purged without making the chain invalid. The reason is that in case of SideDB only hashes of transactions and data is kept inside the chain still being verifiable because of the generated hashes. Nevertheless, the data only needs to be provided if specifically asked for, e.g. in case of an (external) audit.
 
 The second point which needs further efforts is the part of the testing coverage where the \textbf{ASIM implementations} are \textbf{tested} against the actual implementation of the prototype and later against the productive implementation. These test will be covered in deliverable 4.1 and 4.2.

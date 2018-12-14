@@ -9,7 +9,7 @@ Eduard Hirsch
 \section{ASIM and blockchain}
 \label{sec:asim}
 
-Creating a scalable distributed application is a big challenge. Even more when monolithic legacy systems need to be addressed, like in case of the Sardex payment systems realized on Sardinia. For INTERLACE this meant to deal with a system which is currently stable and working reliably. The drawback of this system is, that it is not scaling well which became more and more evident in recent time and especially will be a problem when provided to multiple other circuits outside of the region besides from the original one in Sardina.
+Creating a scalable distributed application is a big challenge. Even more when monolithic legacy systems need to be addressed like in case of the Sardex payment systems, realized on Sardinia. For INTERLACE this meant to deal with a system which is currently stable and working reliably. The drawback of this system is, that it is not scaling well which became more and more evident in recent time and especially will be a problem when provided to multiple other circuits outside of the region besides from the original one in Sardina.
 
 This report will describe a prototypical solution on how distribution and saleability are handled using proper technologies which allow the idea of a mutual credit system to grow and evolve. In detail for INTERLACE an architectural process was introduced which is trying to thoroughly use models that are well tested and shared amongst each other in a very specific and detailed way.
 
@@ -45,7 +45,7 @@ Desirable properties during searching for technologies INTERLACE of blockchains 
 	\item Virtual Machine like executions of code (chaincode or Smart Contracts)
 \end{itemize}
 
-Further the usage of Smart Contracts or chaincode (Hyperledger Fabric nomenclature) come with various other attributes which are important to manage a mutual credit system. Code executions which are running "on chain" are executed on every peer in the network. In order to be executed correctly chains define roles, state and the code which is attached to a transaction takes care about the business logic and a correct workflow which is writing to the blockchain.
+Further, the usage of Smart Contracts or chaincode (Hyperledger Fabric nomenclature) come with various other attributes which are important to manage a mutual credit system. Code executions which are running "on chain" are executed on every peer in the network. In order to be executed correctly chains define roles, state and the code which is attached to a transaction and takes care about the business logic as well as a correct workflow which is writing to the blockchain.
 
 As mentioned before the technology currently use by Sardex lives in a rather monolithic space and it would be extremely difficult and risky to set up a complete distributed blockchain environment and swap systems from one day to another, thus, a road to a complete distributed scenario should be planned keeping in mind that the code base cannot be changed all at once. Speaking of risk means the unclear software and technology requirements but also a possible change of the business model of Sardex as blockchains are quite unique concept with certain implications how users are interacting with the software product.
 
@@ -55,7 +55,7 @@ This Hyperledger Composer business network constructs a blockchain approach whic
 
 \subsection{Testing}
 
-This subsection will give a quick overview how testing may be processed for the prototype as well as for the final product. Detailed testing and description of the activities will be reported in D4.1 and D4.2 which will performed after the end of the project.
+This subsection will give a quick overview how testing may be processed for the prototype as well as for the final product. Detailed testing and description of the activities will be reported in D4.1 and D4.2 which are performed after the end of the project.
 
 There are several levels test will take place. As requirements have been defined in ASM language and translated into an ICEF/coreASIM implementation test will take those into account to verify the system. Traditional approaches like the v-model \cite{forsberg1991relationship} usually test on four levels
 
@@ -66,11 +66,11 @@ There are several levels test will take place. As requirements have been defined
 	\item Unit Testing
 \end{itemize}
 
-ASIM models testing can not be put into one of those categories directly. Further, under the umbrella of modern software development methods like (large-scale) scrum, (scaled) agile different testing practices have been adopted.
+ASIM ground model testing can not be put into one of those categories directly. Further, under the umbrella of modern software development methods like (large-scale) scrum, (scaled) agile different testing practices have been adopted besides the traditional approaches.
 
-For D4.1/2 it is planned to test based on the results of the execution of the ASIM Models. Thus, each requirements has a specific output, which is then compared to the log of an execution produced by the new system. This is of course a pretty high level way of testing an may be seen, when comparing to traditional testing, between Integration and System Testing but rather not in the realm of acceptance testing as the requirements defined by ASM are mathematically based algorithms which are difficult to read and to verify by non-technical people.
+For D4.1/2 it is planned to test based on the results of the execution of the ASIM Models. Thus, each of the requirements has a specific output, which is then compared to the log of an execution produced by the new system. This is of course a pretty high level way of testing an may be seen, when comparing to traditional testing, between Integration and System Testing but rather not in the realm of acceptance testing as the requirements defined by ASM are mathematically based algorithms which are difficult to read and to verify by non-technical people.
 
-Due to time-related issues a replacement tool for the ASM comparison test will be used which is called Cucumber\footnote{\url{https://cucumber.io}}. It a scenario based testing tool which combines functional requirements into high level system test which are described as text as well as with domain specific language in order to execute the test. A testing scenario may look like shown in listing \ref{lst:cucumber}.
+Due to time-related issues a replacement tool for the ASM comparison testing will be used which is called Cucumber\footnote{\url{https://cucumber.io}}. It is a scenario based testing tool which combines functional requirements into high level system test which are described as text as well as with domain specific language in order to execute the test. A testing scenario may look like shown in listing \ref{lst:cucumber}.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -91,7 +91,7 @@ Feature: Perform Credit operations
 \end{minipage}
 \end{center}
 
-The various steps $Given$ [initial context], $When$ [event occurs], $Then$ [ensure some outcomes] are based on a special language called Gherkin\footnote{\url{https://docs.cucumber.io/gherkin}}and elements of it can be connected to test implementations serving that scenario. Details can be looked up at Cucumber Documentation which is publicly available and referenced in the text above.
+The various steps $Given$ [initial context], $When$ [event occurs], $Then$ [ensure some outcomes] are based on a special language called Gherkin\footnote{\url{https://docs.cucumber.io/gherkin}} and elements of it can be connected to test implementations serving that scenario. Details can be looked up at Cucumber Documentation which is publicly available and referenced in the text above.
   
 \section{Solution Technologies}
 \label{sec:solution}
@@ -105,4 +105,16 @@ This last introductory part finally presents the planned solution stack which wi
   \label{fig:solution-stack}
 \end{figure}
 
-As Hyperledger Fabric and Composer are working properly only on MacOs and Linux operating systems there exists an option which includes virtualizsation. On GitHub\footnote{\url{https://github.com/hirsche/hyperledger}} a Vagrant assisted Hyper-V or VirtualBox Machine may be started proving an Ubuntu 16.04 eco-system which is also explained in the next section.
+Although detailed explanation will be given in section \ref{ch:prototype} a simple structure introduction is given here.
+
+The whole system currently runs on an Ubuntu Version 16.04 LTS as Hyperledger Fabric together with Composer are working properly only on MacOs or Linux operating systems. Thus, optionally, a possibility exists which includes virtualizsation. On GitHub\footnote{\url{https://github.com/hirsche/hyperledger}} a Vagrant assisted Hyper-V or VirtualBox Machine may be started proving an Ubuntu 16.04 eco-system which is also explained in the next section.
+
+On top of Ubuntu a Docker runtime is hosting a Hyperledger Fabric docker-compose cluster which is running one to $n$ peers, an Orderer, a Certification Authority (CA) as well as a managing a container which is handling the Hyperledger Composer specific part.
+
+That base Fabric environment is managed by the Composer wrapper framework which provides help during implementation and setting up a business network, forming the key access port for the other components.
+
+Next the Composer API is proving stubs for REST Server as well as Web Server implementations which really simplifies the programming necessary. Those can be used to first load the application, connect to the business network and then execute various transaction/transfers. The Web-Application is implemented using AngularJS and may be secured using Passport.js which is an authentication middleware.
+
+Finally on top of the whole stack, cucumber tests are used to verify simple scenarios.
+
+

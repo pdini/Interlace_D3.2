@@ -3,74 +3,75 @@
 
 \vspace{-1cm}
 \begin{center}
-Eduard Hirsch
+Eduard Hirsch and Paolo Dini
 \end{center}
 
 \section{ASIM and blockchain}
 \label{sec:asim}
 
-Creating a scalable distributed application is a big challenge. Even more when monolithic legacy systems need to be addressed like in case of the Sardex payment systems, realized on Sardinia. For INTERLACE this meant to deal with a system which is currently stable and working reliably. The drawback of this system is, that it is not scaling well which became more and more evident in recent time and especially will be a problem when provided to multiple other circuits outside of the region besides from the original one in Sardina.
+Creating a scalable distributed application is a big challenge. Even more so when monolithic legacy systems need to be addressed as in the case of the Sardex payment system, partly realised in Sardinia. For INTERLACE this meant dealing with a system which is currently stable and working reliably. One of the drawbacks of this system, however, is that it does not scale well, which has become increasingly evident in recent times. This problem has become increasingly evident as more circuits from other parts of Italy have been added to the database.
 
-This report will describe a prototypical solution on how distribution and saleability are handled using proper technologies which allow the idea of a mutual credit system to grow and evolve. In detail for INTERLACE an architectural process was introduced which is trying to thoroughly use models that are well tested and shared amongst each other in a very specific and detailed way.
+This report describes a prototypical solution of how distribution and scalability are handled using technologies that allow a mutual credit system to grow and evolve. More specifically, for INTERLACE a well-tested architectural, specification, and modelling process was introduced, the Abstract States (Interaction) Machines paradigm \cite{BoergerStaerk2003}, which uses a distributed computational model that allows for iterative refinement of different concurrent and communicating system components in a very specific and detailed way.
 
-As described in \cite{INTERLACE_D21} an ASM definition has been declared which acts as a ground model for the INTERLACE prototype. Then this paper based definition has been transformed into executable code realized with the ICEF\footnote{Interaction Computing Execution Framework} which is based on ASM language primitives. The next step, which attains main attention in this report, is the last before the actual testing which needs to be done on various levels.
+As described in \cite{INTERLACE_D21}, an ASIM definition was developed which acts as a ground model for the INTERLACE prototype. This paper-based definition was then transformed into executable code realised with the ICEF,\footnote{Interaction Computing Execution Framework} which is based on ASM language primitives \cite{BoergerStaerk2003}. The implementation, which is the main focus of this report, is the last step before testing, which needs to be done on various levels (component and field testing).
 
-In the following subsections the various topics encountered during planning and evolving of the new blockchain based system are addressed.
+In the following subsections the various topics and challenges encountered during the planning and the definition of the new blockchain-based system are addressed.
 
 \subsection{From Servers to Agents and Peers}
 
-INTERLACE encourages not just a change in technology but also an architectural culture change. Currently many systems in industry are based on monolithic approaches which are stable and based on commonly known and highly adopted implementation strategies.
-
-Often not even based on multiple tiers those classic strategies suit the needs of small and middle sized projects but come at high cost for very large application services and their providers. When increasing in size they become more and more difficult to manage given
-
-\begin{itemize}
+INTERLACE encourages not just a change in technology but also an architectural culture change. Currently many systems in industry are based on monolithic approaches which are stable and based on commonly known and widely adopted implementation strategies. Often not even based on multiple tiers, such classic strategies suit the needs of small and middle-sized projects but come at high cost for very large application services and their providers. When increasing in size they become increasingly difficult to manage given
+\begin{quote}
+\begin{packed_item1}
 	\item their large code base,
 	\item non-autonomous teams,
 	\item lack in agility,
 	\item difficult deployments and
 	\item high commitment to specific technologies or even worse vendor lock-ins.
-\end{itemize}
+\end{packed_item1}
+\end{quote}
 
-Modern large scale architectures therefore aim for finding different possibilities in the field of SOA\footnote{Service Oriented Architecture \cite{erl2014next}} and when advancing further in Micro-Services Architectures. Especially Micro-Services Architectures \cite{newman2015building} claim to solve these problems by providing simple and easy to build applications at the expense of higher network load and more difficult systems integration.
+Modern large-scale architectures, therefore, aim to find different possibilities in the field of SOA\footnote{Service-Oriented Architecture \cite{erl2014next}}, and when advancing further also in Micro Services Architectures (MSAs). In particular, MSAs \cite{newman2015building} claim to solve these problems by providing simple and easy-to-build applications at the expense of higher network load and more difficult system integration.
 
-However, INTERLACE, as mentioned before is favouring a different solutions which has similar ideas but is still in most fundamental parts very different, namely, blockchains. Blockchains, like Micro Services, have a highly decentralized distributed nature, regardless, Micro Services deal with an almost purely architectural stile whereas blockchains have a data centric approach and are quite specific in terms of use.
+However, as mentioned above INTERLACE favours a different solution which has similar ideas but is in some of its most fundamental aspects very different; namely, the blockchain. Although the blockchain, like MSA, has a highly distributed nature, MSA is mainly an architectural stile whereas most blockchains are based on a data-centric approach and are quite specific in terms of scenarios of use. In addition, as discussed more fully in D2.2 \cite{INTERLACE_D22}, permissionless blockchain are also decentralised, which generally refers to a distribution of control in addition to a distribution of the computation. Although in this report we discussed the Hyperledger blockchain, which is permissioned, Hyperledger also has an interface to Ethereum, which is permissionless and which could be a useful addition to the Sardex/INTERLACE platform for example to record currency exchange transactions between circuits in different parts of the world that are pegged 1-1 to different fiat currencies. Finally, in the future an interface to Holochain, which is agent-centric and not data-centric, could also become relevant and useful \cite{INTERLACE_D22,INTERLACE_D23}.
 
-Desirable properties during searching for technologies INTERLACE of blockchains are
-
+As discussed more fully in \cite{INTERLACE_D22}, desirable properties of blockchain technologies for INTERLACE are:
+\begin{quote}
 \begin{itemize}
 	\item Distribution
 	\item Peer to Peer communication
-	\item Immutable => auditable 
+	\item Immutable $\Rightarrow$ auditable 
 	\item Data storage
-	\item Virtual Machine like executions of code (chaincode or Smart Contracts)
+	\item Virtual Machine-like executions of code (chaincode or Smart Contracts)
 \end{itemize}
+\end{quote}
 
-Further, the usage of Smart Contracts or chaincode (Hyperledger Fabric nomenclature) come with various other attributes which are important to manage a mutual credit system. Code executions which are running "on chain" are executed on every peer in the network. In order to be executed correctly chains define roles, state and the code which is attached to a transaction and takes care about the business logic as well as a correct workflow which is writing to the blockchain.
+Further, the use of Smart Contracts or chaincode (Hyperledger Fabric nomenclature) comes with various other attributes which are important to manage a mutual credit system. Code executions which run ``on chain'' are executed on every peer in the network. In order to be executed correctly a blockchain framework defines the roles of various system components, the state of the chain, and the code which is attached to a transaction and takes care of the business logic. The whole framework results in a workflow whose main steps are recorded and written to the blockchain.
 
-As mentioned before the technology currently use by Sardex lives in a rather monolithic space and it would be extremely difficult and risky to set up a complete distributed blockchain environment and swap systems from one day to another, thus, a road to a complete distributed scenario should be planned keeping in mind that the code base cannot be changed all at once. Speaking of risk means the unclear software and technology requirements but also a possible change of the business model of Sardex as blockchains are quite unique concept with certain implications how users are interacting with the software product.
+Because the technology currently used by Sardex is mainly monolithic, it would be extremely difficult and risky to set up a complete distributed blockchain environment and swap systems from one day to the next. Rather, a roadmap to a completely distributed scenario is being planned, keeping in mind that the code base cannot be changed all at once. In fact, some of the functions of the original system are gradually being reimplemented as external microservices such as, for example, Search. Risk refers to the fact that the non-functional requirements of most blockchain frameworks are still evolving as the technology itself undergoes a continuous process of innovation. In addition, risk also refers to the continuous evolution and innovation that the business model of Sardex itself undergoes. Since blockchains are quite different application platforms which carry certain implications for how users should interact with the software product, any changes in the underlying framework or in the business/application layer need to be introduced gradually and carefully.
 
-Consequently, INTERLACE focus has been on understanding the complete core requirements, facilitating the AS(I)M approach, creating a generic model and being independent of technologies used to make the road towards a fully distributed, scalable and reliable system clearer and reduce risks. For INTERLACE this meant further, that the agent based ASIM client-server model has been utilized to create a Hyperledger Composer based implementation.
+Consequently, the INTERLACE focus has been on understanding the complete core requirements, facilitating the AS(I)M approach, creating a generic model, and as much as possible remaining independent of the underlying technology used, in order to make the transition towards a fully distributed, scalable, and reliable system clearer and with minimum risk. For INTERLACE this meant, further, that the agent-based ASIM methodology was used to specify a client-server model to create a Hyperledger Composer-based implementation.
 
-This Hyperledger Composer business network constructs a blockchain approach which is combining also a Micro Services Architecture. This is not yet a fully distributed scenario but still highly decentralized and also nicely scalable like extending to other circuits or balancing load in-between. In that way it is in addition possible to keep partly control of the blockchain and impose certain rules which otherwise would not yet be clear how to manage them on a completely plain, open-to-the-public blockchain realization.
+The Hyperledger Composer business network is a blockchain architecture that also incorporates a Micro Services Architecture. Although this is not yet a fully distributed or decentralised scenario, it is scalable because new nodes can be added when extending to other circuits and the transaction processing load can be balanced between them. The permissioned Hyperledger architecture, therefore, allows better control of the blockchain functionalities and the enforcement of rules (business or otherwise), which would otherwise be very difficult or impossible to impose in a permissionless, public chain.
 
 \subsection{Testing}
 
-This subsection will give a quick overview how testing may be processed for the prototype as well as for the final product. Detailed testing and description of the activities will be reported in D4.1 and D4.2 which are performed after the end of the project.
+This subsection gives a quick overview of how testing may be processed for the prototype as well as for the final product. Detailed testing and a description of the testing activities will be reported in D4.1 and D4.2, which will be completed after the end of the project.
 
-There are several levels test will take place. As requirements have been defined in ASM language and translated into an ICEF/coreASIM implementation test will take those into account to verify the system. Traditional approaches like the v-model \cite{forsberg1991relationship} usually test on four levels
-
-\begin{itemize}
+There are several levels of testing that need to take place. Since the requirements were defined in the ASIM language and were translated into an ICEF/coreASIM implementation, the test should take this intermediate implementation into account to verify the correctedness system. This, in fact, is integral to the iterative refinement process of the ASM methodology \cite{BoergerStaerk2003}. Traditional approaches like the v-model \cite{forsberg1991relationship} usually test on four levels:
+\begin{quote}
+\begin{packed_item1}
 	\item Acceptance Testing
 	\item System Testing
 	\item Integration Testing
 	\item Unit Testing
-\end{itemize}
+\end{packed_item1}
+\end{quote}
 
-ASIM ground model testing can not be put into one of those categories directly. Further, under the umbrella of modern software development methods like (large-scale) scrum, (scaled) agile different testing practices have been adopted besides the traditional approaches.
+ASIM ground model testing cannot be put into one of these categories directly. Further, under the umbrella of modern software development methods like (large-scale) scrum, (scaled) agile different testing practices have been adopted besides the traditional approaches.
 
-For D4.1/2 it is planned to test based on the results of the execution of the ASIM Models. Thus, each of the requirements has a specific output, which is then compared to the log of an execution produced by the new system. This is of course a pretty high level way of testing an may be seen, when comparing to traditional testing, between Integration and System Testing but rather not in the realm of acceptance testing as the requirements defined by ASM are mathematically based algorithms which are difficult to read and to verify by non-technical people.
+For D4.1/2 it is planned to test based on the results of the execution of the ASIM Models. Thus, each of the requirements has a specific output, which is then compared to the log of an execution produced by the new system. This is of course a pretty high-level way of testing. Compared to traditional testing it may be seen to lie between Integration and System Testing, but not properly in the realm of acceptance testing since the requirements defined by ASIMs are mathematically-based algorithms which are difficult to read and to verify by non-technical people.
 
-Due to time-related issues a replacement tool for the ASM comparison testing will be used which is called Cucumber\footnote{\url{https://cucumber.io}}. It is a scenario based testing tool which combines functional requirements into high level system test which are described as text as well as with domain specific language in order to execute the test. A testing scenario may look like shown in listing \ref{lst:cucumber}.
+Cucumber\footnote{\url{https://cucumber.io}} may be used as a potential replacement tool for the ASIM comparison testing. Cucumber is a scenario-based testing tool which combines functional requirements into high-level system tests which are described as text as well as with a domain-specific language that enables the exectution of the test. A testing scenario may look like the one shown in Listing \ref{lst:cucumber}.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -79,7 +80,7 @@ Due to time-related issues a replacement tool for the ASM comparison testing wil
 Feature: Perform Credit operations
   Move money from an account of member A to an account of member B
   
-  Scenario: account B receives 100 Sardex of account A
+  Scenario: account B receives 100 Sardex from account A
     Given: Account A has a positive balance
       And: Account B is able to receive money
       And: Account A has a balance of 100
@@ -91,30 +92,30 @@ Feature: Perform Credit operations
 \end{minipage}
 \end{center}
 
-The various steps $Given$ [initial context], $When$ [event occurs], $Then$ [ensure some outcomes] are based on a special language called Gherkin\footnote{\url{https://docs.cucumber.io/gherkin}} and elements of it can be connected to test implementations serving that scenario. Details can be looked up at Cucumber Documentation which is publicly available and referenced in the text above.
+The various steps $Given$ [initial context], $When$ [event occurs], $Then$ [ensure some outcomes] are based on a special language called Gherkin\footnote{\url{https://docs.cucumber.io/gherkin}} whose elements can be connected to test implementations serving that scenario. Details can be found in the publicly available Cucumber documentation.
   
 \section{Solution Technologies}
 \label{sec:solution}
 
-This last introductory part finally presents the planned solution stack which will be applied for the prototypical solution and is illustrated in figure \ref{fig:solution-stack}. Details on how those components are working together are explained in depth in section \ref{ch:prototype}.
+This last introductory part finally presents the planned solution stack which will be utilised for the prototypical implementation and is illustrated in Figure \ref{fig:solution-stack}. Details on how these components work together are explained in depth in Section \ref{ch:prototype}.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.7\textwidth, clip, trim=1mm 1mm 1mm 1mm]{Figures/solution-stack}
+  \includegraphics[width=1.0\textwidth, clip, trim=1mm 1mm 1mm 1mm]{Figures/solution-stack}
   \caption{\bf\small Technologies involved for the final solution stack}
   \label{fig:solution-stack}
 \end{figure}
 
-Although detailed explanation will be given in section \ref{ch:prototype} a simple structure introduction is given here.
+Although detailed explanation will be given in Section \ref{ch:prototype}, a simple structure introduction is given here.
 
-The whole system currently runs on an Ubuntu Version 16.04 LTS as Hyperledger Fabric together with Composer are working properly only on MacOs or Linux operating systems. Thus, optionally, a possibility exists which includes virtualizsation. On GitHub\footnote{\url{https://github.com/hirsche/hyperledger}} a Vagrant assisted Hyper-V or VirtualBox Machine may be started proving an Ubuntu 16.04 eco-system which is also explained in the next section.
+The whole system currently runs on Ubuntu Version 16.04 LTS as Hyperledger Fabric together with Composer work properly only on the MacOs or Linux operating systems. Thus, optionally, a possibility exists which includes virtualizsation. On GitHub\footnote{\url{https://github.com/hirsche/hyperledger}} a Vagrant-assisted Hyper-V or VirtualBox Machine may be started providing an Ubuntu 16.04 ecosystem, which is also explained in the next section.
 
-On top of Ubuntu a Docker runtime is hosting a Hyperledger Fabric docker-compose cluster which is running one to $n$ peers, an Orderer, a Certification Authority (CA) as well as a managing a container which is handling the Hyperledger Composer specific part.
+On top of Ubuntu a Docker runtime hosts a Hyperledger Fabric docker-compose cluster which runs one to $n$ peers, an Orderer, and a Certification Authority (CA), as well as managing a container which handles the Hyperledger Composer-specific part.
 
-That base Fabric environment is managed by the Composer wrapper framework which provides help during implementation and setting up a business network, forming the key access port for the other components.
+This base Fabric environment is managed by the Composer wrapper framework, which forms the key access port for the other components and provides help during implementation and the setting up of a business network.
 
-Next the Composer API is proving stubs for REST Server as well as Web Server implementations which really simplifies the programming necessary. Those can be used to first load the application, connect to the business network and then execute various transaction/transfers. The Web-Application is implemented using AngularJS and may be secured using Passport.js which is an authentication middleware.
+Next, the Composer API provides stubs for the REST Server and the Web Server implementations, which really simplifies the programming necessary. These servers can be used to first load the application and connect it to the business network, and then execute various transactions/transfers. The Web Application is implemented using AngularJS and may be secured using Passport.js, which is an authentication middleware.
 
-Finally on top of the whole stack, cucumber tests are used to verify simple scenarios.
+Finally, on top of the whole stack, Cucumber tests can be used to verify simple scenarios.
 
 

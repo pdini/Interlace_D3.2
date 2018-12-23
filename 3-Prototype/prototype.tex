@@ -835,11 +835,11 @@ As this is a maintenance transaction it should be executed only by an admin or a
 \subsection{Queries}
 \label{subsec:queries}
 
-Using Hyperledger Composer it is easily possible to read data written into the ledger. This can be done by using its bespoke query language by defining a file called \textit{queries.qry}. 
+Using Hyperledger Composer it is easy to read data written into the ledger. This can be done with its bespoke query language by defining a file called \textit{queries.qry}. 
 
-The Hyperledger Composer Query Language\footnote{\url{https://hyperledger.github.io/composer/v0.19/reference/query-language}} is used in INTERLACE to read information about \textit{PendingTransfer} as well as about \textit{DeltaDebt}. Although looking like SQL a very limited set of operators are possible to use. Nevertheless, for INTERLACE this limitations are not relevant because simple selection and filtering is sufficient which can be observed looking at listing \ref{lst:queries}.
+The Hyperledger Composer Query Language\footnote{\url{https://hyperledger.github.io/composer/v0.19/reference/query-language}} is used in INTERLACE to read information about \textit{PendingTransfer} as well as about \textit{DeltaDebt}. Although it looks similar to SQL, it has only a very limited set of operators. Nevertheless, for INTERLACE these limitations are not relevant because simple selection and filtering is sufficient, as can be observed in Listing \ref{lst:queries}.
 
-The first query in the listing \textit{selectExpiredPendingTransfers} is used by transaction \textit{CleanupPendingTransfers} to find all transfers which are outdated and should be marked as \textit{Expired}. In detail the \textit{SELECT} keyword expects an asset defined in the CTO and will return all of the entries in the ledger filtered by the \textit{WHERE} condition.
+The first query in the listing \textit{selectExpiredPendingTransfers} is used by transaction \textit{CleanupPendingTransfers} to find all transfers which are outdated and should be marked as \textit{Expired}. More specifically, the \textit{SELECT} keyword expects an asset defined in the CTO model and will return all the entries in the ledger filtered by the \textit{WHERE} condition.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
@@ -862,20 +862,20 @@ query selectDeltaDebt {
 \end{minipage}
 \end{center}
 
-Here we filter against property \textit{expires} and state equals to 'Pending'. Parameters like \textit{\_\$now} may be supplied using a JSON like reference from JavaScript\footnote{\url{https://hyperledger.github.io/composer/v0.19/api/client-businessnetworkconnection\#buildquery}}.
+Here we filter against property \textit{expires} and state equals to 'Pending'. Parameters like \textit{\_\$now} may be supplied using a JSON-like reference from JavaScript.\footnote{\url{https://hyperledger.github.io/composer/v0.19/api/client-businessnetworkconnection\#buildquery}}
 
-In query \textit{selectDeltaDebt} all open debts for particular debitor (which is a member of the circuit) having id \textit{\_\$ID} are selected. Like parameter \textit{\_\$now}, parameter \textit{\_\$ID} needs to be set by the calling counterpart.
+In query \textit{selectDeltaDebt}, all the open debts of a particular debitor (member of the circuit) who has id \textit{\_\$ID} are selected. Like parameter \textit{\_\$now}, parameter \textit{\_\$ID} needs to be set by the calling counterparty.
 
 \subsection{Access Control Language File}
 
-The INTERLACE prototype currently only has one user which is also the admin and user of the whole network - for no other users certificates have been issued.  This can be easily changed by adopting the acl-file of the implementation and binding certificates to participants.  However, to reduce complexity especially for people who work first with the demo implementation the set-up has been kept simple in this regards.
+The INTERLACE prototype currently only has one user, who is also the admin and user of the whole network -- no certificates have been issued for other users.  This can be easily changed by adopting the .acl file of the implementation and binding certificates to participants.  However, to reduce complexity, especially for people who work first with the demo implementation, the set-up has been kept simple in this regard.
 
-In listing \ref{lst:acl-permissions} you may find the INTERLACE Access Control Language file, permissons.acl, which grants access to any user with any operation available.  
+Listing \ref{lst:acl-permissions} shows the INTERLACE Access Control Language file, permissons.acl, which grants access to any user with any operation available.
 
 \begin{center}
 \begin{minipage}{0.8\textwidth}
 \small
-\begin{lstlisting}[language=json,firstnumber=1,caption={\bf\small access  control configuration for INTERLACE}, captionpos=b,label=lst:acl-permissions]
+\begin{lstlisting}[language=json,firstnumber=1,caption={\bf\small Access  control configuration for INTERLACE}, captionpos=b,label=lst:acl-permissions]
 rule Default {
     description: "Allow all participants access to all resources"
     participant: "ANY"
@@ -895,17 +895,17 @@ rule SystemACL {
 \end{minipage}
 \end{center}
 
-Details on how to refine access can be found at the Hyperledger Composer documentation\footnote{\url{https://hyperledger.github.io/composer/v0.19/tutorials/acl-trading}}.
+Details on how to refine access can be found in the Hyperledger Composer documentation.\footnote{\url{https://hyperledger.github.io/composer/v0.19/tutorials/acl-trading}}
 
 \subsection{Deployment}
 
-The deployment of the chaincode application has to happen in several steps which are, as mentioned in section \ref{subsec:install}, handled by \textit{initNetwork.sh} or after consecutive changes with \textit{updateNetwork.sh}. Both scripts utilize the hyperledger composer-cli component.
+As mentioned in Section \ref{subsec:install}, the deployment of the chaincode application has to happen in several steps which are handled by \textit{initNetwork.sh}, or after consecutive changes with \textit{updateNetwork.sh}. Both scripts utilize the hyperledger composer-cli component.
 
-The script \textit{initNetwork.sh} needs to
+The script \textit{initNetwork.sh} needs to:
 
 \begin{enumerate}
-	\item create package.json if not existing
-	\item packing all sources into a bna-file,
+	\item create package.json if it does not exist,
+	\item pack all sources into a bna-file,
 	\item create a network card for the \textit{ChannelAdmin} as well as the \textit{PeerAdmin} roles,
 	\item import that card,
 	\item install the new network,
@@ -915,21 +915,21 @@ The script \textit{initNetwork.sh} needs to
 
 Basically, the script will provide a running business network together with composer cards which are connection profiles used to access the network.
 
-During development the network usually needs to be deployed a couple of times to check and test the implementations. For that purpose \textit{updateNetwork.sh} has been created. It reduces these 7 steps necessary for initial install to just 4 handling an intermediate update. These steps are
+During development the network usually needs to be deployed a couple of times to check and test the implementations. \textit{updateNetwork.sh} was created for this purpose. It reduces these 7 steps necessary for initial install to just 4 that handle an intermediate update. These steps are:
 
 \begin{enumerate}
-	\item increasing the version of the business network implementation,
-	\item re-packing the changed sources into a bna-file having a higher version tag,
-	\item installing the new bna-file on the network,
-	\item and at last upgrading the network to the new version.
+	\item increase the version of the business network implementation,
+	\item re-pack the changed sources into a .bna file with a higher version tag,
+	\item install the new .bna file on the network,
+	\item and at last upgrade the network to the new version.
 \end{enumerate}
 
 \section{Rest Server}
 \label{sec:rest-server}
 
-A REST server used for connections of client applications can be provided by the Hyperledger Composer Rest Server CLI-Tool\footnote{\url{https://hyperledger.github.io/composer/latest/reference/rest-server}}. The REST server is able to connect to the business network and provides access to all assets, transactions and queries available on the network.
+A REST server used for connections of client applications can be provided by the Hyperledger Composer Rest Server CLI-Tool.\footnote{\url{https://hyperledger.github.io/composer/latest/reference/rest-server}} The REST server is able to connect to the business network and provides access to all assets, transactions, and queries available on the network.
 
-For INTERLACE all the configurations necessary to run that server are gathered inside \textit{startRestServer.sh}. The exposed REST API is shown in figure \ref{fig:rest-swagger} and is build with Swagger tools\footnote{\url{https://swagger.io/}}.
+For INTERLACE all the configurations necessary to run this server are gathered inside \textit{startRestServer.sh}. The exposed REST API is shown in Figure \ref{fig:rest-swagger} and is built with Swagger tools.\footnote{\url{https://swagger.io/}}
 
 \begin{figure}[htbp]
   \centering
@@ -941,26 +941,27 @@ For INTERLACE all the configurations necessary to run that server are gathered i
 \section{Web Application}
 \label{sec:webapp}
 
-In figure \ref{fig:webapp} an illustration of a web page generated for the INTERLACE business network implementation is shown. It has been created using generator-hyperledger-composer\footnote{\url{https://www.npmjs.com/package/generator-hyperledger-composer}} which is a yeoman\footnote{\url{http://yeoman.io/}} module.
+Figure \ref{fig:webapp} shows an illustration of a web page generated for the INTERLACE business network implementation. It was  created using generator-hyperledger-composer,\footnote{\url{https://www.npmjs.com/package/generator-hyperledger-composer}} which is a Yeoman\footnote{\url{http://yeoman.io/}} module.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.8\textwidth]{Figures/webapp}
-  \caption{\bf\small An AngularJS based web-application }
+  \includegraphics[width=0.7\textwidth]{Figures/webapp}
+  \caption{\bf\small An AngularJS-based web application }
   \label{fig:webapp}
 \end{figure}
 
-From that web-application it is possible to list, add and edit assets and participants as well as submit transactions to the network. It is implemented in AngularJS\footnote{\url{https://angular.io/}} and connects to the REST server which is, as mentioned, also provided by the composer tool-suit.
-
-Consequently, it is possible to manage assets like \textit{SysAccount}, \textit{CCAccount}, \textit{PendingTransfer}, \textit{DeltaDebt}. Participants like \textit{Subscriber} and \textit{Individual} are using these assets whereas transaction \textit{CreditTransfer}, \textit{DebitTransfer}, \textit{DebitTransferAcknowledge} and \textit{CleanupPendingTransfer} handling the way how the assets are processed during application access.
+In this web application it is possible to list, add, and edit assets and participants, as well as submit transactions to the network. It is implemented in AngularJS\footnote{\url{https://angular.io/}} and connects to the REST server which is, as mentioned, also provided by the Composer Tools suite. Consequently, it is possible to manage assets like \textit{SysAccount}, \textit{CCAccount}, \textit{PendingTransfer}, and \textit{DeltaDebt}. Participants like \textit{Subscriber} and \textit{Individual} are using these assets, whereas transaction \textit{CreditTransfer}, \textit{DebitTransfer}, \textit{DebitTransferAcknowledge}, and \textit{CleanupPendingTransfer} handle how the assets are processed during application access.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.3\textwidth]{Figures/webapp-transfer}
+  \includegraphics[width=0.5\textwidth]{Figures/webapp-transfer}
   \caption{\bf\small Credit/Debit Transfers }
   \label{fig:webapp-transfer}
 \end{figure}
 
-Assets may be changed directly with the appropriate permissions without facilitating any of the mentioned transactions in order to administer them. Regardless of the way of changing assets, thus, using custom transactions or just executing changes directly, all manipulations to the chain are recorded to the chain and clearly traceable.
+With the appropriate permissions, assets may be changed directly, without facilitating \textcolor{red}{[It is not clear to me what you mean by `facilitating', here]} any of the mentioned transactions in order to administer them. Therefore, regardless of how the assets are changed (i.e.\ using custom transactions or just executing changes directly), all manipulations to the chain are recorded to the chain and clearly traceable.
 
-In figure \ref{fig:webapp-transfer} the graphical interface for an invocation of a credit/debit transfer is illustrated. It is picking up a \textit{fromAccount}, \textit{toAccount} and a amount which is going to be transferred. As explained in section \ref{sec:chaincode}, for a \textit{DebitTransfer} to be performed, the owner of the \textit{fromAccount} needs to send a \textit{DebitTransferAcknowledge} confirmation.
+Figure \ref{fig:webapp-transfer} shows the graphical interface for an invocation of a credit/debit transfer. It picks up a \textit{fromAccount}, \textit{toAccount} and the amount that needs to be transferred. As explained in Section \ref{sec:chaincode}, for a \textit{DebitTransfer} to be performed the owner of the \textit{fromAccount} needs to send a \textit{DebitTransferAcknowledge} confirmation.
+
+
+

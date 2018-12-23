@@ -959,7 +959,7 @@ In this web application it is possible to list, add, and edit assets and partici
   \label{fig:webapp-transfer}
 \end{figure}
 
-With the appropriate permissions, assets may be changed directly, without facilitating \textcolor{red}{[It is not clear to me what you mean by `facilitating', here]} any of the mentioned transactions in order to administer them. Therefore, regardless of how the assets are changed (i.e.\ using custom transactions or just executing changes directly), all manipulations to the chain are recorded to the chain and clearly traceable.
+With the appropriate permissions, like we have with the admin user, assets may be changed directly, without calling any of the mentioned transactions which normally take care about updating the chain consistently. Further, regardless of how the assets are changed (i.e.\ using custom transactions or just executing changes directly), all manipulations to the chain are recorded to the chain and clearly traceable.
 
 Figure \ref{fig:webapp-transfer} shows the graphical interface for an invocation of a credit/debit transfer. It picks up a \textit{fromAccount}, \textit{toAccount} and the amount that needs to be transferred. As explained in Section \ref{sec:chaincode}, for a \textit{DebitTransfer} to be performed the owner of the \textit{fromAccount} needs to send a \textit{DebitTransferAcknowledge} confirmation.
 

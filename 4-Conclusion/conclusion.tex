@@ -6,86 +6,83 @@
 Eduard Hirsch
 \end{center}
 
-This last chapter discusses the goals reached as well as the problems encountered during developing the INTERLACE prototype. Additionally, emphasis it put on possible enhancements necessary and issues which needs to be taken into account in order to bring that prototype to productive solution.
-
-Finally parts are discussed which could not be finished as well as after-INTERLACE goals are addressed.
+This last chapter discusses the goals reached as well as the problems encountered during the development of the INTERLACE prototype. Additionally, it emphasises possible enhancements necessary and issues which need to be taken into account in order to bring the prototype to production level. Finally, it discusses parts that could not be finished as well as after-INTERLACE goals.
 
 \section{Best Practices, Falsey and Pitfalls}
 
-When using hyperledger composer but also when connecting to hyperledger fabric directly some points are important to take care of. Developers have to be aware that working with chain-code or smart contracts, although highly abstracted from the user already by various frameworks, and interacting with a distributed ledger like a blockchain, it is quite different from accessing data as usual in a RDBMS\footnote{Relational Database Management System}.
+When using Hyperledger Composer but also when connecting to Hyperledger Fabric directly, it is important to take care of some points. Developers have to be aware that working with chaincode or smart contracts, although highly abstracted from the user already by various frameworks, and interacting with a distributed ledger like a blockchain, is quite different from accessing data as usual in a RDBMS.\footnote{Relational Database Management System}
 
-Next some of those typical peculiarities are approached and attempted to be clarified.
+\textcolor{red}{[This is what I think you mean, but I am not sure:] Developers have to be aware that working with chaincode or smart contracts is quite different from accessing data as usual in a RDBMS,\footnote{Relational Database Management System} partly because most frameworks abstract chaincode and smart contracts from the low-level data management aspects, and partly because the user is interacting with a distributed ledger like a blockchain rather than with a centralised database.}
+
+In the following sections we discuss and attempt to clarify some of these peculiarities.
 
 \subsection{Deterministic Execution}
 
-One of the most important things to take care of when writing chain-code applications is the deterministic execution of transaction. Which seams quite obvious at the beginning is sometimes quite challenging to achieve.
+One of the most important things to keep in mind when writing chaincode applications is the deterministic execution of transactions. Although it seems quite obvious at first, it can be quite challenging to achieve.
 
-One example is the \textbf{generation of IDs}:  In a standard database environment simple locking mechanisms are in place to ensure correct primary keys for entries in a table. For blockchains  which are living in a distributed, consensus-based system it is problematic to create identifiers over chain-code execution. The reason is that each peer processing a transaction would compute a new ID completely independent and most likely at the about the same time. Thus, if such a key-/ID-generation would create different IDs on different clients no consensus may be reached and although nothing is actually wrong with the transaction itself the resulting blockchain states would be different and therefore the last action would be rolled back.
+One example is the \textbf{generation of IDs}:  in a standard database environment simple locking mechanisms are in place to ensure correct primary keys for entries in a table. For blockchains which live in a distributed, consensus-based system it is problematic to create identifiers over chaincode execution. The reason is that each peer processing a transaction would compute a new ID completely independently, and most likely at the about the same time. Thus, if such a key-/ID-generation created different IDs on different clients, it might not be possible to reach consensus; thus, although nothing is actually wrong with the transaction itself, the resulting blockchain states in each peer would be different and therefore the last action would be rolled back.
 
-This would be especially hard to deal with during race conditions and even more difficult to find out why a particular problem has been occurring.
+This would be especially hard to deal with during race conditions, and even more difficult to find out why a particular problem has occurred.
 
-One solution to that problem would be to generate the ID from the client and pass it to the transaction as parameter which would result in much safer creation process which is further much faster during execution.
+One solution to this problem could be to generate the ID from the client and pass it to the transaction as parameter. This would result in a much safer creation process which, additionally, is much faster during execution.
 
-Another problem poses the usage of \textbf{random numbers} which is fairly impossible to use in chain-code executions as such a calculation would reach obviously different results on the various peers of the network.
+Another problem is posed by the use of \textbf{random numbers}. Since such calculations would reach different results on the various peers of the network, it is impossible to use random numbers in chaincode executions. Further, since it is not possible to know when a peer in the network will receive a new transaction, also the \textbf{creation of a date} or a timestamp is intrinsically random. Thus, dates created \textcolor{red}{by different peers} during chaincode execution are different and when written into an e.g.\ asset also create different blockchains on different clients \textcolor{red}{[Do you mean clients or do you mean peers here?]}, and would therefore be rolled back. Even if peers were able to reach consensus, validation of the blockchain nodes retroactively would not be possible as the date has been changed completely. \textcolor{red}{[The last sentence is not clear. Consensus is normally defined in terms of transaction order. But if the dates are different on different peers I don't see how consensus could be reached across all the peers, in general. So I think there is something wrong with this sentence. Maybe you are trying to say something different?]}
 
-But also not just plain random number generation but also the \textbf{creation of a date} has a random factor. It is not possible to know when a peer in the network actually receives a new transaction and, thus, dates created during chain-code execution are different and when written into an e.g. asset also creates different blockchains on different clients and would be therefore rolled back. Even if peers would reach consensus validation of the blockchain nodes retroactively would not be possible as the date has been changed completely.
+To sum up the above statements: \textbf{Chaincode needs to be executed deterministically and has to reach, given its input parameters, the same result(s) \textcolor{red}{on all the peers} at any point in time}.
 
-To sum up the above statements: \textbf{Chain-code needs to be executed deterministically and has to reach, given its input parameters, the same result(s) at any point in time}.
+\textbf{Note:} Another consequence of this statement is that many parameters cannot be generated \st{inside of} \textcolor{red}{by} chaincode but need to be provided as parameters to a transaction. But if parameters may be creatable on client-side only, it is also necessary to implement that logic in a way that these cannot be used to fool the system or bring it into an inconsistent state. \textcolor{red}{[Perhaps better:] But since this means that the parameters are creatable on the client-side only, it is also necessary to implement the corresponding logic in a way that prevents them from being used to fool the system or bring it into an inconsistent state.} 
 
-\textbf{Note:} Another consequence of that statement is that a lot of parameters can not be generated inside of chain-code but need to be provided as parameter to a transaction. But if parameters may be creatable on client-side only, it is also necessary to implement that logic in a way that these can not be used to fool the system or bring it into an inconsistent state.
+\subsection{Network Upgrade}
 
-\subsection{Upgrade Network}
+Traditionally, updating a database after changes to the database model may be quite cumbersome due to the presence of new fields, foreign keys, and many other similar issues. However, various methods and strategies are in place for handling these issues.
+On the other hand, since blockchains are usually spread over various peers that store replicated data, in contrast to traditional databases it is inherently more difficult to change the distributed structures to fit some new schema necessary to add a new feature or functionality.
 
-Traditionally updating a database after changes to database model may be quite cumbersome due to new field, foreign keys and many more issues. However, for those various methods and strategies are in place for handling them.
-
-Blockchains are usually spread over various peers storing replicated data. Therefore, in contrast to traditional databases, it is inherently more difficult to change the distributed structures to fit some new schema necessary to add a new feature or functionality.
-
-There may be several problems updating and changing attributes and values getting it ready for the next version of the network. It is necessary to apply all changes to network before others are able to manipulate the current ledger state in order to keep consistency and reliably achieve all fixes.
+There may be several problems updating and changing attributes and values getting it \textcolor{red}{[what is `it'?]} ready for the next version of the network. It is necessary to apply all changes to network before others are able to manipulate the current ledger state in order to keep consistency and reliably achieve all fixes. \textcolor{red}{[You seem to be using `network' and `blockchain' interchangeably in this sentence. I am not sure my attempt at rephrasing, below, is correct: are you getting the attributes and values ready for the next version, or are you getting the blockchain ready? By using `them' I am assuming the attributes and values, but I don't know if that's what you mean. The problem is that you talk about database schema, but this section is about upgrading the network, not the data in the database. So it is not clear which level you are talking about. I presume that network topology updates are not a big deal, and therefore a `network upgrade' perhaps refers more to the blockchain level than to the network level. But I am not sure. Here is an attempt at rephrasing that in my opinion does NOT solve this problem (but is the best I can do); so please change it as you best see fit:] Updating and changing attributes and values and getting them ready for the next version of the network may run into several problems. In particular, in order to keep consistency and reliably achieve all fixes it is necessary to apply all changes to the network in such a way as to prevent others from manipulating the current ledger state, i.e.\ before potential attackers can take advantage of the network upgrading condition.}
 
 Thus, it is quite important to get everything right from the beginning, as it can be extremely difficult to apply certain changes. Consequently, it is highly advisable to think about possible changes and future scenarios together with possible side-effects and costs before first deployment to production systems.
 
 \subsection{Hyperledger Composer Specifics}
 
-Composer can be seen as rapid-development approach and its API sits on top of hyperledger fabric framework. It tries to shield complexity from the user and aims to significantly reduce time necessary to create distributed applications for hyperledger fabric.
+Composer can be seen as a rapid-development approach. Its API sits on top of the Hyperledger Fabric framework. It tries to shield complexity from the user and aims to significantly reduce the time necessary to create distributed applications for Hyperledger Fabric.
 
-For INTERLACE this meant that
-
+For the development of the INTERLACE transactional service this meant that:
+\begin{quote}
 \begin{itemize}
 	\item models could be transferred easily,
-	\item chain-code could be based on those models,
-	\item a REST-Server has been supplied and
-	\item a web-application generator has been available.
+	\item chaincode could be based on these models,
+	\item a REST Server was supplied and
+	\item a web-application generator was available.
 \end{itemize}
+\end{quote}
 
-Consequently, it is a framework ideal for prototyping. Also when finding the right cloud provider spinning up a network would be straight forward. When hosting a network without any external provider which knows how to run those networks, a lot of the initial speed during creating a network might be lost because then a much deeper understanding of the whole architecture is necessary, thus, also a higher effort is needed to get a ready implementation to work.
+Consequently, it was an ideal framework for prototyping. Also when finding the right cloud provider spinning up a network would be straightforward. \textcolor{red}{[I think you mean:] In addition, once a suitable cloud provider has been found, spinning up a network is straightforward. [I had no idea about what you were trying to say until I realised that perhaps you meant to put a comma after `Also'; once I put the comma there the (probable) meaning became clear. I wonder: have you considered taking a few lessons in English syntax? Given your knowledge of programming languages and logic I think it would take relatively little effort to take your written English to a whole new level!]} When hosting a network without an external provider who knows how to run these networks, much of the initial speed in creating it might be lost because, in such a case, a much deeper understanding of the whole architecture is necessary. Thus, also a greater effort is needed to get a ready implementation to work.
 
-\textbf{Note:} For productive systems it would necessary to change to a plain fabric implementation because Composer is still in a quite early stage and there even are rumours that it will be discontinued. The reason is that some of the new features of the fabric releases are deviating from the structures implemented by composer. So it is getting more and more difficult for Hyperledger Composer developers to provide new features and functionalities available for fabric.
+\textbf{Note:} For production systems it would be necessary to change to a plain Fabric implementation because Composer is still at quite an early stage of development, and there are even rumours that it may be discontinued. The reason is that some of the new features of the Fabric releases are deviating from the structures implemented by Composer. So it is becoming increasingly difficult for Hyperledger Composer developers to provide new features and functionalities available for Fabric.
 
 \section{Identity Management}
 \label{sec:id-management}
 
-Identity Management as mentioned in previous sections has been skipped for the prototype in order to simplify the environment, decrease development efforts and therefore offer an easy access to an example mutual credit system to understand the basics.
-
-Nevertheless, it would be quickly possible to create additional participants and grant them access to the network instead of just the currently used admin-account. E.g. an identity card can be issued for the first participant defined in transaction "InitBlockchain" which is identified by "m1". The example below illustrates how that might be done:
+As mentioned in previous sections, we skipped Identity Management for the prototype in order to simplify the environment, decrease development efforts and therefore offer a relatively easier access to an example mutual credit system, hoping that this would make it easier to understand the basics. Nevertheless, it would be possible and quick to create additional participants and grant them access to the network in addition to just the currently used admin account. For example, an identity card can be issued for the first participant defined in transaction "InitBlockchain" which is identified by "m1". The example below illustrates how this might be done:
 
 \begin{lstlisting}[language=bash]
 	composer identity issue -c admin@tutorial-network -f m1.card -u m1 -a "resource:net.sardex.interlace.Individual#m1" -x true 
 \end{lstlisting}
 
-This identity card is facilitated by the rest server and corresponds to participant in the business network. But before a user can act with that identity it is necessary when accessing the REST server to log in first and authenticate in some sort of way. To do so composer-rest-server uses an authentication middleware implemented in JavaScript called \textit{Passport.js}\footnote{\url{http://www.passportjs.org/}}.
+This identity card is facilitated by the REST server and corresponds to a participant in the business network. 
+But, when accessing the REST server, before a user can act with that identity it is necessary for him/her to log in first and authenticate his/her identity in some sort of way. To do so composer-rest-server uses an authentication middleware implemented in JavaScript called \textit{Passport.js}.\footnote{\url{http://www.passportjs.org/}}
 
-The passport middleware offers many different authentication strategies and is a quite mature Open Source framework. An example on how to authenticate with OAuth and GitHub can be found at the Composer documentation website\footnote{\url{https://hyperledger.github.io/composer/latest/integrating/enabling-rest-authentication}} but also different schemes can be used like JSON Web Tokens (JWT\footnote{\url{https://jwt.io/}}) mentioned in the issue tracker of the Hyperledger Composer GitHub page\footnote{\url{https://github.com/hyperledger/composer/issues/2038}}.
+The passport middleware offers many different authentication strategies and is quite a mature Open Source framework. An example of how to authenticate with OAuth and GitHub can be found on the Composer documentation website;\footnote{\url{https://hyperledger.github.io/composer/latest/integrating/enabling-rest-authentication}} but also different schemes can be used, like the JSON Web Tokens (JWT\footnote{\url{https://jwt.io/}}) which is mentioned in the issue tracker of the Hyperledger Composer GitHub page.\footnote{\url{https://github.com/hyperledger/composer/issues/2038}}
 
-Passport is a commonly known middleware for authentication and may be applied also for different scenarios, thus, also is usable well when swapping Composer for another technology.
+Passport is a commonly known middleware for authentication and may be applied also to different scenarios. Thus, it is usable well also if Composer is swapped for another technology.
 
 \section{Future Scenarios}
 \label{sec:future-scene}
 
-Because of using hyperledger fabric it is only a matter of configuration of extending the network. The current approach taken for INTERLACE prototype, shown in figure \ref{fig:prototype-net-ext} creates a new organisation for every payment circuit dealing with their specific region. Consequently, each region would be responsible for hosting their own peers and ideally also their own certification authority (CA), however, certificates might be still handled by the Sardex CA. 
+Because we are using Hyperledger Fabric, extending the network is only a matter of changing the configuration. The approach taken for the INTERLACE prototype, shown in Figure \ref{fig:prototype-net-ext}, creates a new organisation for every payment circuit that deals with a new specific region. Consequently, each region would be responsible for hosting their own peers and ideally also their own certification authority (CA). However, certificates might be still handled by the Sardex CA. 
 
-Sardex, in this scenario, is acting as a kind of knowledge provider, transferring architecture and how to run such an additional circuit getting in a similar role of a franchising cooperation. The clients and various other visible graphical interfaces may be branded in various ways, nevertheless, the underlying structure is predefined by Sardex in order to make the network work consistently.
+Sardex, in this scenario, would act as a kind of knowledge provider, transferring architecture and how to run such an additional circuit getting in a similar role of a franchising cooperation. \textcolor{red}{[Do you mean: `providing the network architecture and transferring the know-how about how to run a circuit, which would result in a model similar to a franchise.'?]} Although the clients and various other visible graphical interfaces may be branded in various ways, the underlying platform infrastructure would be predefined by Sardex in order to make the network work consistently.
 
-The orderer will be handled by Sardex as well but might be later hand over to an e.g. non-profit organisation to guarantee fair and clear defined rules. To ensure a reliable system and a high performance throughput an orderer can be clustered locally but also over various regional separated areas.
+The orderer will be handled by Sardex as well, but later might be handed over to an e.g.\ non-profit organisation representing the circuit and enforcing fair and clearly defined rules within a governance framework defined in collaboration with the circuit members themselves. To ensure a reliable system and a high performance throughput, an orderer could be clustered locally but also over various regionally separated areas.
 
 \begin{figure}[htbp]
   \centering
@@ -96,18 +93,24 @@ The orderer will be handled by Sardex as well but might be later hand over to an
 
 \section{Final Review and Open Points}
 
-That ledger application prototype is forming the stable and scalable basis for reliable payment circuit. Although the prototype is developed with Hyperledger Composer which IBM is pretty likely to discontinuing support for, an subsequent implementation in Hyperledger Fabric only, will be much easier to realize. Also because newer versions of fabric support an node.js SDK\footnote{Software Development Kit} which would even allow to transfer JavaScript code bits.
+Our DLT application prototype forms a stable and scalable basis for a reliable payment circuit. In fact, although the prototype was developed with Hyperledger Composer, which IBM may discontinue support for, any subsequent implementation in Hyperledger Fabric only will now be much easier to realize. This is also because newer versions of Fabric support a node.js SDK,\footnote{Software Development Kit} which would even allow the transfer of JavaScript code bits.
 
-Basically the goal of creating a reliable DLT has been achieved and forms necessary foundation for the various other services provided in future by the productive business solution created for Sardex.
+In summary, the goal of creating a reliable DLT has been achieved, and forms a necessary foundation for the various other services provided in future for the production-level business solutions created by and with Sardex.
 
 \subsection{Open Points}
 
-The \textbf{GDPR}\footnote{General Data Protection Regulation\cite{GDPR}} taken into effect from the beginning of 2018 also posses a challenge to blockchain solutions and therefore also for the INTERLACE project. It is necessary that person related information is not exposed to other parties unless necessary and done in agreement with them. Also each information collected for and by the user needs to be deletable if requested and certainly possible to be looked up what data exactly has been collected.
+The \textbf{GDPR}\footnote{General Data Protection Regulation \cite{GDPR}} directive that came into effect in the first half of 2018 represents a challenge for blockchain solutions and, therefore, also for the INTERLACE project. It is necessary that personal information is not exposed to other parties unless necessary and unless it is done in agreement with its owners. In addition, each piece of information collected for the user or provided by the user needs to be deletable if the user requests it, and it must certainly be possible to look up upon request exactly what data was collected.
 
-Information is reliably stored inside of a blockchain, thus, looking up information is actually not an issue but rather keeping it secret from being read by other parties because standard blockchain approaches are copying everything to any peer. This is solved currently by making the actual chain only accessible by peers which are owned by the organisation running the local circuit. The Clients available for performing transfers will have restricted access an cannot see the whole blockchain.
+Information is reliably stored inside of a blockchain. Thus, looking up information is actually not an issue. Rather, one of the challenges is to keep it secret from being read by other parties, since standard blockchain approaches copy everything to every peer. Another challenge is the immutability of most blockchains, since GDPR enforces the right to be forgotten. The privacy aspect is solved currently by making the actual chain only accessible by the peers that are owned by the organisation running the local circuit. In this configuration, the clients that perform transfers have restricted access and cannot see the whole blockchain.
 
-In later stages it may be possible that every business/party participating in the payment network accessing the blockchain directly, thus, running a node. In this case the so called \textit{SideDB}\footnote{\url{https://hyperledger-fabric.readthedocs.io/en/latest/private-data/private-data.html}} is taken into consideration because it is a way offered by Hyperledger Fabric to store information which is only known by the respective client and only shared if permitted by the client.
+In later stages it may be possible for every business/party participating in the payment network to access the blockchain directly, i.e.\ to run a node. In this case the so-called \textit{SideDB}\footnote{\url{https://hyperledger-fabric.readthedocs.io/en/latest/private-data/private-data.html}} can be taken into consideration because it is a way offered by Hyperledger Fabric to store information which is only known by the respective client and only shared if permitted by the client.
 
-This \textit{SideDB} also solves the problem of GDPR relevant data, because first, it is only exposed to whom it may concerned, and second, it can be purged without making the chain invalid. The reason is that in case of SideDB only hashes of transactions and data is kept inside the chain still being verifiable because of the generated hashes. Nevertheless, the data only needs to be provided if specifically asked for, e.g. in case of an (external) audit.
+\textit{SideDB} also solves the problem of GDPR-relevant data because, first, it is only exposed ``to whom it may concern'' and, second, it can be purged without making the chain invalid. The reason is that in SideDB only hashes of transactions and data are stored on the chain, which still makes it verifiable by regenerating the hash and comparing every time a datum needs to be verified. Normally the data only needs to be provided if specifically asked for, e.g.\ in case of an (external) audit.
 
-The second point which needs further efforts is the part of the testing coverage where the \textbf{ASIM implementations} are \textbf{tested} against the actual implementation of the prototype and later against the productive implementation. These test will be covered in deliverable 4.1 and 4.2.
+The second point which needs further effort is the part of the testing coverage where the \textbf{ASIM implementations} are \textbf{tested} against the actual implementation of the prototype and later against the production-level implementation. These tests will be covered in deliverables D4.1 and D4.2 whose future versions will be completed after the end of the project.
+
+
+
+
+
+

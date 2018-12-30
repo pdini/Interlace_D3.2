@@ -8,24 +8,23 @@ Eduard Hirsch
 
 This last chapter discusses the goals reached as well as the problems encountered during the development of the INTERLACE prototype. Additionally, it emphasises possible enhancements necessary and issues which need to be taken into account in order to bring the prototype to production level. Finally, it discusses parts that could not be finished as well as after-INTERLACE goals.
 
-\section{Best Practices, Falsey and Pitfalls}
+\section{Best Practices, Falsey Values and Pitfalls}
 
-When using Hyperledger Composer but also when connecting to Hyperledger Fabric directly, it is important to take care of some points. Developers have to be aware that working with chaincode or smart contracts is quite different from accessing data as usual in a RDBMS,\footnote{Relational Database Management System} even though up-to-date frameworks  shield a lot of the complexity underneath. Thus, even though access to the data structures and virtual machine/execution capabilities looks similar from a developer's point of view, it is necessary to account for some peculiarities related to blockchain-based technologies, because of their highly distributed nature. In the following sections we discuss and attempt to clarify some of these peculiarities.
+When using Hyperledger Composer but also when connecting to Hyperledger Fabric directly, it is important to pay attention to some points. Developers have to be aware that working with chaincode or smart contracts is quite different from accessing data as usual in a RDBMS,\footnote{Relational Database Management System} even though up-to-date frameworks shield a lot of the complexity underneath. Thus, even though access to the data structures and virtual machine/execution capabilities looks similar from a developer's point of view, it is necessary to account for some peculiarities related to blockchain-based technologies, because of their highly distributed nature. In the following sections we discuss and attempt to clarify some of these peculiarities.
 
 \subsection{Deterministic Execution}
 
 One of the most important things to keep in mind when writing chaincode applications is the deterministic execution of transactions. Although it seems quite obvious at first, it can be quite challenging to achieve.
 
-One example is the \textbf{generation of IDs}:  in a standard database environment simple locking mechanisms are in place to ensure correct primary keys for entries in a table. For blockchains which live in a distributed, consensus-based system it is problematic to create identifiers over chaincode execution. The reason is that each peer processing a transaction would compute a new ID completely independently, and most likely at the about the same time. Thus, if such a key-/ID-generation created different IDs on different clients, it might not be possible to reach consensus; thus, although nothing is actually wrong with the transaction itself, the resulting blockchain states in each peer would be different and therefore the last action would be rolled back.
-
-This would be especially hard to deal with during race conditions, and even more difficult to find out why a particular problem has occurred.
+One example is the \textbf{generation of IDs}: in a standard database environment simple locking mechanisms are in place to ensure correct primary keys for entries in a table. For blockchains which live in a distributed, consensus-based system it is problematic to create identifiers over chaincode execution. The reason is that each peer processing a transaction would compute a new ID completely independently, and most likely at the about the same time. Thus, if such a key-/ID-generation created different IDs on different clients, it might not be possible to reach consensus; thus, although nothing is actually wrong with the transaction itself, the resulting blockchain states in each peer would be different and therefore the last action would be rolled back. This would be especially hard to deal with during race conditions, and even more difficult to find out why a particular problem has occurred.
 
 One solution to this problem could be to generate the ID from the client and pass it to the transaction as parameter. This would result in a much safer creation process which, additionally, is much faster during execution.
 
 Another problem is posed by the use of \textbf{random numbers}. Since such calculations would reach different results on the various peers of the network, it is impossible to use random numbers in chaincode executions. Further, since it is not possible to know when a peer in the network will receive a new transaction, also the \textbf{creation of a date} or a timestamp is intrinsically random. Thus, dates created by different peer nodes during chaincode execution are different and when written into an e.g.\ asset also create different blockchains on different nodes, and would therefore be rolled back.
 
-\textcolor{green}{For example, a possible scenario is that the date has been chosen to contain only day, month and year (no hour, seconds, ...), such that execution of the same transaction on different peers is likely to happen on the same day. In such a case, peers are able to reach consensus most of the time. However, validation of a transaction on different blockchain nodes would not be possible if it happens on different days (if e.g. execution is delayed or at the end of a day) or (re-)checked retroactively.\\\\To explain further, chaincode running on peer $A$ may produce a date of \textbf{12 April 2018} at 23:59 in the evening. If peer node $B$ receives the same transaction at 00:00 the next day, it will produce the date \textbf{13 April 2018}. Also, if e.g.\ somebody wants to check if the blockchain is in a consistent state, a transaction might be re-executed at any point in time after \textbf{12 April 2018} (staying with this example). Then the chaincode needs to run again and a date possibly written into the chain will be definitely different from the one produced during the re-execution.\\\\
-Consequently, those examples will lead to different outcomes on different peer nodes and therefore will roll back the transaction or mark the whole chain as invalid from the point in time where that particular transaction has been appended to the ledger}
+For example, a possible scenario is that the date has been chosen to contain only day, month and year (no hour, seconds, ...), such that execution of the same transaction on different peers is likely to happen on the same day. In such a case, peers are able to reach consensus most of the time. However, validation of a transaction on different blockchain nodes would not be possible if it happens on different days (if e.g. execution is delayed or at the end of a day) or (re-)checked retroactively. To explain further, chaincode running on peer $A$ may produce a date of 12 April 2018 at 23:59 in the evening. If peer node $B$ receives the same transaction at 00:00 the next day, it will produce the date 13 April 2018. Also, if e.g.\ somebody wants to check if the blockchain is in a consistent state, a transaction might be re-executed at any point in time after 12 April 2018 (staying with this example). Then the chaincode needs to run again and a date already written into the chain will be definitely different from the date produced during the re-execution. Consequently, those examples will lead to different outcomes on different peer nodes and therefore will trigger a rollback of the transaction or mark the whole chain as invalid from the point in time where that particular transaction had been appended to the ledger
+
+The problem of the 12th vs.\ the 13th of April is solved by the consensus algorithm: one of them is chosen and it will remain the date of that transaction forever. The solution to the second problem is to make the date an input parameter for a transaction. Thus, a future re-execution simply needs to provide the original date as one of the inputs in order for the re-execution to produce the same results.
 
 To sum up the above statements: \textbf{Chaincode needs to be executed deterministically and has to reach, given its input parameters, the same result(s) on all the peer nodes at any point in time}.
 
@@ -46,14 +45,15 @@ Composer can be seen as a rapid-development approach. Its API sits on top of the
 
 For the development of the INTERLACE transactional service this meant that:
 \begin{quote}
+\vspace{-0.3cm}
 \begin{itemize}
 	\item models could be transferred easily,
 	\item chaincode could be based on these models,
 	\item a REST Server was supplied and
 	\item a web-application generator was available.
 \end{itemize}
+\vspace{-0.3cm}
 \end{quote}
-
 Consequently, it was an ideal framework for prototyping. In addition, once a suitable cloud provider has been found, spinning up a network is straightforward. When hosting a network without an external provider who knows how to run these networks, much of the initial speed in creating it might be lost because, in such a case, a much deeper understanding of the whole architecture is necessary. Thus, also a greater effort is needed to get a ready implementation to work.
 
 \textbf{Note:} For production systems it would be necessary to change to a plain Fabric implementation because Composer is still at quite an early stage of development, and there are even rumours that it may be discontinued. The reason is that some of the new features of the Fabric releases are deviating from the structures implemented by Composer. So it is becoming increasingly difficult for Hyperledger Composer developers to provide new features and functionalities available for Fabric.
@@ -66,6 +66,7 @@ As mentioned in previous sections, we skipped Identity Management for the protot
 \begin{lstlisting}[language=bash]
 	composer identity issue -c admin@tutorial-network -f m1.card -u m1 -a "resource:net.sardex.interlace.Individual#m1" -x true 
 \end{lstlisting}
+\vspace{-0.3cm}
 
 This identity card is facilitated by the REST server and corresponds to a participant in the business network. 
 But, when accessing the REST server, before a user can act with that identity it is necessary for him/her to log in first and authenticate his/her identity in some sort of way. To do so composer-rest-server uses an authentication middleware implemented in JavaScript called \textit{Passport.js}.\footnote{\url{http://www.passportjs.org/}}
